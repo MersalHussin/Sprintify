@@ -4,11 +4,11 @@
 Sprintify is a collaborative, AI-powered project management tool designed for agile development teams. It bridges the gap between high-level project ideation and technical execution. By integrating intelligent prompt engineering, Sprintify analyzes a user’s broad "Project Goal" and automatically transforms it into actionable technical tasks, user stories, and acceptance criteria. The platform ensures a seamless workflow using a robust tech stack (React, TypeScript, Node.js) and guarantees consistent deployment environments through Docker containerization.
 
 ## 👥 Team Members
-- [Name 1]  
-- [Name 2]  
-- [Name 3]  
-- [Name 4]  
-- [Name 5]  
+- Mostafa Mersal  
+- Mohammed ElHusseiny
+- Oliver Attia 
+- Omar Yasser  
+- Youssef Adel 
 
 ## 🎯 Project Objectives
 - **AI Automation:** To leverage AI and prompt engineering to break down complex project goals into specific, manageable development tasks automatically.  
