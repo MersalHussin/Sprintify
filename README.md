@@ -8,7 +8,10 @@ Sprintify is a collaborative, AI-powered project management tool designed for ag
 - Mohammed ElHusseiny
 - Oliver Attia 
 - Omar Yasser  
-- Youssef Adel 
+- Youssef Adel
+
+## 🗂️ Figma File
+**[🔗 View Sprintify Figma Design](https://www.figma.com/design/q9NYvs3ybYxyvNz74Jda9d/Sprintify?node-id=0-1&t=TLiCxIkoJSCSRrn4-1)**
 
 ## 🎯 Project Objectives
 - **AI Automation:** To leverage AI and prompt engineering to break down complex project goals into specific, manageable development tasks automatically.  
