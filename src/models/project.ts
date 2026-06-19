@@ -1,0 +1,27 @@
+import { Schema, model, type InferSchemaType, type Types } from "mongoose";
+
+
+const projectSchema = new Schema(
+    {
+        name: { type: String, required: true, trim: true },
+        team: {
+            type: Schema.Types.ObjectId,
+            ref: "Team",
+            required: true,
+        },
+        createdBy: {
+            type: String,
+            required: true,
+        }
+    }, { timestamps: true }
+);
+
+projectSchema.pre("deleteOne", async function(next) {
+    const projectId = this.getQuery()._id as Types.ObjectId;
+    // await Task.deleteMany({ projectId });
+    // await Sprint.deleteMany({ projectId });
+});
+
+export type ProjectDocument = InferSchemaType<typeof projectSchema> & { _id: Types.ObjectId };
+
+export const Project = model("Project", projectSchema);
