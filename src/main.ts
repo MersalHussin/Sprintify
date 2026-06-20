@@ -3,7 +3,6 @@ import cors from "cors";
 import helmet from "helmet";
 
 import env from "./lib/env";
-import authRouter from "./modules/auth";
 import { getFirebaseApp } from "./lib/firebase";
 import { aiRateLimiter, globalRateLimiter } from "./middleware/rate-limiter";
 import { connectDB } from "./lib/db";
@@ -15,7 +14,6 @@ const app = express();
 
 app.use(cors({ origin: env.frontendUrl, credentials: true }));
 app.use(helmet());
-app.use(globalRateLimiter);
 
 const bootstrap = async (): Promise<void> => {
   await connectDB();
@@ -26,8 +24,9 @@ const bootstrap = async (): Promise<void> => {
   // Require authentication for all routes
   app.use(requireAuth);
   app.use(express.json());
-  app.use("/api/auth", authRouter);
   app.use("/api/ai", aiRateLimiter);
+  // TODO: Add globalRateLimiter for all upcoming routes
+  app.use("/api/teams", globalRateLimiter);
 
   app.listen(env.port, () => console.log(`Server listening on http://localhost:${env.port}`));
 };

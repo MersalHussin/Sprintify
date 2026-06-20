@@ -1,3 +1,4 @@
+import { TaskDocument } from "../models/task";
 import { TeamDocument } from "../models/team";
 import { TeamMembershipDocument } from "../models/team-memberships";
 
@@ -5,7 +6,7 @@ interface ProjectDetails {
     name: string;
     team: TeamDocument;
     teamMemberships: TeamMembershipDocument[];
-    // tasks: TaskDocument[];
+    tasks: TaskDocument[];
     // sprints: SprintDocument[];
 }
 

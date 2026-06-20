@@ -2,7 +2,9 @@ import { getRedis } from "../lib/redis";
 import crypto from "node:crypto";
 import env from "../lib/env";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { chatAssistantPrompt } from "../constants/chat-assistant-prompt";
 
+// TODO: Add project details to the chat assistant prompt
 export async function chat(userId: string, projectId: string, message: string, sessionId: string = ""): Promise<{ sessionId: string, response: ChatCompletionMessageParam }> {
     // chat:{userId}:{projectId}:{sessionId}
     const redis = await getRedis();
@@ -13,6 +15,7 @@ export async function chat(userId: string, projectId: string, message: string, s
 
     let messages: ChatCompletionMessageParam[] = [];
     if(chat) messages = JSON.parse(chat);
+    // else messages.push({ role: "system", content: chatAssistantPrompt(projectDetails) as unkown as string });
 
     const userMessage: ChatCompletionMessageParam = { role: "user", content: message };
 

@@ -27,9 +27,13 @@ const taskSchema = new Schema(
 
         projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
         teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
+        sprintId: { type: Schema.Types.ObjectId, ref: "Sprint" },
         createdBy: { type: String, required: true }
     }, { timestamps: true }
 );
+
+taskSchema.index({ projectId: 1, sprintId: 1 });
+taskSchema.index({ assignees: 1 });
 
 export type TaskDocument = InferSchemaType<typeof taskSchema> & { _id: Types.ObjectId };
 

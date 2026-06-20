@@ -1,5 +1,6 @@
 import { Schema, model, type InferSchemaType, type Types } from "mongoose";
-
+import { Task } from "./task";
+import { Sprint } from "./sprint";
 
 const projectSchema = new Schema(
     {
@@ -18,8 +19,8 @@ const projectSchema = new Schema(
 
 projectSchema.pre("deleteOne", async function(next) {
     const projectId = this.getQuery()._id as Types.ObjectId;
-    // await Task.deleteMany({ projectId });
-    // await Sprint.deleteMany({ projectId });
+    await Task.deleteMany({ projectId });
+    await Sprint.deleteMany({ projectId });
 });
 
 export type ProjectDocument = InferSchemaType<typeof projectSchema> & { _id: Types.ObjectId };
