@@ -1,0 +1,41 @@
+{
+  "templates": [
+    {
+      "id": "1",
+      "title": "Startup Launchpad",
+      "description": "Generate a core backlog for launching a new SaaS product."
+    },
+    {
+      "id": "2",
+      "title": "Security Audit",
+      "description": "Create a comprehensive checklist for web app security reviews."
+    },
+    {
+      "id": "3",
+      "title": "Microservices Sync",
+      "description": "Map out cross-team dependencies and pipeline tracking."
+    }
+  ],
+  "generations": [
+    {
+      "id": "1",
+      "title": "Neo-Bank Feature Set",
+      "meta": "Generated 2 hours ago • 48 tasks created",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "2",
+      "title": "Analytics Dashboard",
+      "meta": "Generated 5 hours ago • 12 tasks created",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "3",
+      "title": "Mobile App Auth Flow",
+      "meta": "Generating... • 0 tasks created",
+      "status": "In progress"
+    }
+    
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
