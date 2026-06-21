@@ -9,6 +9,7 @@ const Onboarding = lazy(() => import("./components/pages/onboarding"));
 const Dashboard = lazy(() => import("./components/pages/dashboard"));
 const Terms = lazy(() => import("./components/pages/terms"));
 const NotFound = lazy(() => import("./components/pages/not-found"));
+const AI = lazy(() => import("./components/pages/ai"));
 
 function RouteFallback() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/ai" element={<AI />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
