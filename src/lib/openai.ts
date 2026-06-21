@@ -9,7 +9,7 @@ export function getOpenAI(): OpenAI {
     if(global._openaiClient) return global._openaiClient;
 
     global._openaiClient = new OpenAI({
-        baseURL: "https://models.github.ai/inference",
+        baseURL: env.aiBaseURL,
         apiKey: env.githubToken,
     });
 

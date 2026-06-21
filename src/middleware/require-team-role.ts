@@ -5,18 +5,29 @@ import { Team } from "../models/team";
 import type { TeamRole } from "../types/team";
 import { handleResponse } from "../lib/response-handler";
 
-export const requireTeamRole = async (role: TeamRole) => async (req: Request, res: Response, next: NextFunction) => {
-  const { teamId } = req.params as { teamId: string };
-  if(!teamId) return handleResponse(res, 400, undefined, "Team ID is required");
+export const requireTeamRole = (role: TeamRole) => async (req: Request, res: Response, next: NextFunction) => {
+  const teamId = req.params.teamId ?? req.project?.teamId.toString();
+  if (!teamId) return handleResponse(res, 400, undefined, "Team ID is required");
 
-  const team = await Team.findById(teamId);
-  if (!team) return handleResponse(res, 404, undefined, "Team not found");
+  const team = req.projectDetails?.team ?? req.team;
+  if (!team) {
+    const fetched = await Team.findById(teamId);
+    if (!fetched) return handleResponse(res, 404, undefined, "Team not found");
+    req.team = fetched;
+  } else if (team._id.toString() !== teamId) {
+    return handleResponse(res, 400, undefined, "Team ID is required");
+  } else {
+    req.team = team;
+  }
 
-  const membership = await TeamMembership.findOne({ teamId, userId: req.user!.id });
-  if (!membership) return handleResponse(res, 404, undefined, "You are not a member of this team");
+  const resolvedTeamId = req.project?.teamId.toString() ?? req.team._id.toString();
+  const callerRole =
+    resolvedTeamId === teamId && req.callerMembership
+      ? req.callerMembership.role
+      : (await TeamMembership.findOne({ teamId, userId: req.user!.id }))?.role;
 
-  if(membership.role !== role) return handleResponse(res, 403);
+  if (!callerRole) return handleResponse(res, 404, undefined, "You are not a member of this team");
+  if (callerRole !== role) return handleResponse(res, 403);
 
-  req.team = team;
   next();
-}
+};

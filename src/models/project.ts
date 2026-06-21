@@ -5,7 +5,7 @@ import { Sprint } from "./sprint";
 const projectSchema = new Schema(
     {
         name: { type: String, required: true, trim: true },
-        team: {
+        teamId: {
             type: Schema.Types.ObjectId,
             ref: "Team",
             required: true,
@@ -17,12 +17,16 @@ const projectSchema = new Schema(
     }, { timestamps: true }
 );
 
-projectSchema.pre("deleteOne", async function(next) {
+projectSchema.index({ teamId: 1 });
+
+projectSchema.pre("deleteOne", async function () {
     const projectId = this.getQuery()._id as Types.ObjectId;
     await Task.deleteMany({ projectId });
     await Sprint.deleteMany({ projectId });
 });
 
-export type ProjectDocument = InferSchemaType<typeof projectSchema> & { _id: Types.ObjectId };
+export type ProjectDocument = InferSchemaType<typeof projectSchema> & { 
+    _id: Types.ObjectId
+};
 
 export const Project = model("Project", projectSchema);

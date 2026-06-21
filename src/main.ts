@@ -9,6 +9,8 @@ import { connectDB } from "./lib/db";
 import { requireAuth } from "./middleware/require-auth";
 import { getOpenAI } from "./lib/openai";
 import { getRedis } from "./lib/redis";
+import teamRoutes from "./teams/routes";
+import aiRoutes from "./ai/routes";
 
 const app = express();
 
@@ -24,9 +26,9 @@ const bootstrap = async (): Promise<void> => {
   // Require authentication for all routes
   app.use(requireAuth);
   app.use(express.json());
-  app.use("/api/ai", aiRateLimiter);
+  app.use("/api/ai", aiRateLimiter, aiRoutes);
   // TODO: Add globalRateLimiter for all upcoming routes
-  app.use("/api/teams", globalRateLimiter);
+  app.use("/api/teams", globalRateLimiter, teamRoutes);
 
   app.listen(env.port, () => console.log(`Server listening on http://localhost:${env.port}`));
 };

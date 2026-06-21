@@ -15,13 +15,15 @@ const envSchema = z
     githubToken: z.string().default(""),
     aiModel: z.string().default(""),
     redisURL: z.string().default("redis://127.0.0.1:6379"),
-    ttlSeconds: z.coerce.number().int().positive().default(7200),
+    ttlSeconds: z.coerce.number().int().positive().default(7200), // 120 mins
+    aiBaseURL: z.string().default("https://models.github.ai/inference"),
   })
   .superRefine((data, ctx) => {
     const alwaysRequired: ReadonlyArray<[keyof z.infer<typeof envSchema>, string]> = [
       ["firebaseProjectId", "FIREBASE_PROJECT_ID"],
       ["firebaseClientEmail", "FIREBASE_CLIENT_EMAIL"],
       ["firebasePrivateKey", "FIREBASE_PRIVATE_KEY"],
+      ["githubToken", "GITHUB_TOKEN"],
     ];
 
     for (const [key, envName] of alwaysRequired) {
@@ -36,9 +38,11 @@ const envSchema = z
 
     if (data.environment === "prod") {
       const prodRequired: ReadonlyArray<[keyof z.infer<typeof envSchema>, string]> = [
+        ["mongoURI", "MONGODB_URI"],
         ["githubToken", "GITHUB_TOKEN"],
         ["aiModel", "AI_MODEL"],
         ["redisURL", "REDIS_URL"],
+        ["frontendUrl", "FRONTEND_URL"],
       ];
 
       for (const [key, envName] of prodRequired) {
@@ -67,6 +71,7 @@ const env: Readonly<Environment> = envSchema.parse({
   aiModel: process.env.AI_MODEL,
   redisURL: process.env.REDIS_URL,
   ttlSeconds: process.env.TTL_SECONDS,
+  aiBaseURL: process.env.AI_BASE_URL,
 });
 
 export default env;

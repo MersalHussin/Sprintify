@@ -15,6 +15,11 @@ const sprintSchema = new Schema(
     }, { timestamps: true }
 );
 
-export type SprintDocument = InferSchemaType<typeof sprintSchema> & { _id: Types.ObjectId };
+sprintSchema.index({ projectId: 1, status: 1 });
+sprintSchema.index({ teamId: 1 });
+
+export type SprintDocument = InferSchemaType<typeof sprintSchema> & {
+    _id: Types.ObjectId
+};
 
 export const Sprint = model("Sprint", sprintSchema);
