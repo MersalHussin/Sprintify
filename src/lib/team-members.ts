@@ -1,28 +1,21 @@
-import type { PromptTeamMember } from "../constants/chat-assistant-prompt";
-import type { TeamMember, TeamRole } from "../types/team";
-import type { AuthUser } from "../types/user";
+import type { PromptTeamMember } from "../prompts/chat-assistant-prompt";
+import type { TeamMember } from "../types/team";
+import type { TeamMembershipDocument } from "../models/team-memberships";
+import { toAuthUser, type UserDisplayDocument } from "./users";
 
-type Membership = {
-  userId: string;
-  role: TeamRole;
-  joinedAt: Date;
+export type PopulatedTeamMembership = Omit<TeamMembershipDocument, "userId"> & {
+  userId: UserDisplayDocument;
 };
 
-export function buildTeamMembers(
-  memberships: Membership[],
-  usersById: Map<string, AuthUser>,
-): TeamMember[] {
+export function buildTeamMembers(memberships: PopulatedTeamMembership[]): TeamMember[] {
   return memberships.map((membership) => {
-    const user = usersById.get(membership.userId);
-    const sanitized = user
-      ? { id: user.id, email: user.email, name: user.name }
-      : null;
+    const user = membership.userId;
 
     return {
-      userId: membership.userId,
+      userId: user.uid,
       role: membership.role,
       joinedAt: membership.joinedAt,
-      user: sanitized,
+      user: toAuthUser(user),
     };
   });
 }
@@ -30,7 +23,7 @@ export function buildTeamMembers(
 export function toPromptTeamMembers(teamMembers: TeamMember[]): PromptTeamMember[] {
   return teamMembers.map((member) => ({
     id: member.userId,
-    name: member.user?.name ?? member.user?.email ?? member.userId,
+    name: member.user?.name ?? member.userId,
     role: member.role,
   }));
 }

@@ -2,7 +2,7 @@ import type { AuthUser } from "./user";
 import type { TeamDocument } from "../models/team";
 import type { ProjectDocument } from "../models/project";
 import type { TeamMember, TeamRole } from "./team";
-import type { ProjectDetails, PromptTeamMember } from "../constants/chat-assistant-prompt";
+import type { ProjectDetails, PromptTeamMember } from "../prompts/chat-assistant-prompt";
 
 declare global {
   namespace Express {

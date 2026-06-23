@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 
-import type { ProjectDetails } from "../constants/chat-assistant-prompt";
+import type { ProjectDetails } from "../prompts/chat-assistant-prompt";
 import { handleResponse } from "../lib/response-handler";
 import { buildTeamMembers, toPromptTeamMembers } from "../lib/team-members";
-import { getUsersByIds } from "../lib/users";
+import { SPRINT_CONTEXT_FIELDS, TASK_CONTEXT_FIELDS } from "../lib/query-projections";
+import { getUsersByUids, populateUserField, toAuthUser, type UserDisplayDocument } from "../lib/users";
 import { Project } from "../models/project";
 import { Sprint } from "../models/sprint";
 import { Task } from "../models/task";
@@ -26,18 +27,25 @@ export const resolveProject = async (req: Request, res: Response, next: NextFunc
 
   const [team, tasks, sprints, memberships] = await Promise.all([
     Team.findById(project.teamId),
-    Task.find({ projectId: project._id }),
-    Sprint.find({ projectId: project._id }),
-    TeamMembership.find({ teamId: project.teamId }),
+    Task.find({ projectId: project._id }).select(TASK_CONTEXT_FIELDS),
+    Sprint.find({ projectId: project._id }).select(SPRINT_CONTEXT_FIELDS),
+    TeamMembership.find({ teamId: project.teamId }).populate<{ userId: UserDisplayDocument }>(
+      populateUserField("userId"),
+    ),
   ]);
 
   if (!team) return handleResponse(res, 404, undefined, "Team not found");
 
-  const assigneeIds = tasks.flatMap((task) => task.assignees ?? []);
-  const memberIds = memberships.map((membership) => membership.userId);
-  const usersById = await getUsersByIds([...memberIds, ...assigneeIds]);
+  const teamMembers = buildTeamMembers(memberships);
+  const assigneeUids = tasks.flatMap((task) => task.assignees ?? []);
+  const usersByUid = await getUsersByUids(assigneeUids);
 
-  const teamMembers = buildTeamMembers(memberships, usersById);
+  const usersById = new Map(
+    [...usersByUid.values()].map((user) => [user.uid, toAuthUser(user)]),
+  );
+  for (const member of teamMembers) {
+    if (member.user) usersById.set(member.userId, member.user);
+  }
 
   const projectDetails: ProjectDetails = {
     name: project.name,

@@ -21,10 +21,14 @@ export const requireTeamRole = (role: TeamRole) => async (req: Request, res: Res
   }
 
   const resolvedTeamId = req.project?.teamId.toString() ?? req.team._id.toString();
-  const callerRole =
+  let callerRole =
     resolvedTeamId === teamId && req.callerMembership
       ? req.callerMembership.role
-      : (await TeamMembership.findOne({ teamId, userId: req.user!.id }))?.role;
+      : undefined;
+
+  if (!callerRole) {
+    callerRole = (await TeamMembership.findOne({ teamId, userId: req.user!.id }))?.role;
+  }
 
   if (!callerRole) return handleResponse(res, 404, undefined, "You are not a member of this team");
   if (callerRole !== role) return handleResponse(res, 403);

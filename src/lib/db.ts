@@ -34,6 +34,10 @@ export const connectDB = async (): Promise<typeof mongoose> => {
       });
 
   cached.conn = await cached.promise;
+
+  const { applySchemaValidators } = await import("./schema-validators");
+  await applySchemaValidators();
+
   return cached.conn;
 };
 

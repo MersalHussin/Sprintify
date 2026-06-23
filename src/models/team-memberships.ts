@@ -5,7 +5,7 @@ import { TEAM_ROLES } from "../types/team";
 const teamMembershipSchema = new Schema(
   {
     teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
-    userId: { type: String, required: true },
+    userId: { type: String, ref: "User", required: true },
     role: { type: String, enum: TEAM_ROLES, default: "member", required: true },
     joinedAt: { type: Date, default: Date.now, required: true },
   },

@@ -1,13 +1,12 @@
 import crypto from "node:crypto";
-import { z } from "zod";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 import env from "../lib/env";
-import { chatAssistantPrompt } from "../constants/chat-assistant-prompt";
-import type { ProjectDetails, PromptTeamMember } from "../constants/chat-assistant-prompt";
+import { chatAssistantPrompt } from "../prompts/chat-assistant-prompt";
+import type { ProjectDetails, PromptTeamMember } from "../prompts/chat-assistant-prompt";
 import { ProjectDocument } from "../models/project";
 import type { AuthUser } from "../types/user";
-import { taskGenerationPrompt } from "../constants/task-generation-prompt";
+import { taskGenerationPrompt } from "../prompts/task-generation-prompt";
 import { PRIORITIES, STATUSES } from "../models/task";
 
 export type ChatContext = {
@@ -70,14 +69,6 @@ export type Task = {
   subtasks: { name: string; completed: boolean }[];
 }
 
-export const taskSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  priority: z.enum(PRIORITIES),
-  status: z.enum(STATUSES),
-  subtasks: z.array(z.object({ name: z.string(), completed: z.boolean().default(false) }))
-})
-
 export async function taskGenerationService(
   userId: string,
   context: ChatContext,
@@ -115,3 +106,15 @@ export async function taskGenerationService(
 
   return tasks as Task[];
 };
+
+export async function getChatHistoryService(userId: string, projectId: string, sessionId: string): Promise<ChatCompletionMessageParam[]> {
+  if(!userId) throw new Error("User ID is required");
+  if(!projectId) throw new Error("Project ID is required");
+  if(!sessionId) throw new Error("Session ID is required");
+  
+  const key = `chat:${userId}:${projectId}:${sessionId}`;
+  const chat = await global._redisClient?.get(key);
+  if(!chat) return [];
+  
+  return JSON.parse(chat);
+}

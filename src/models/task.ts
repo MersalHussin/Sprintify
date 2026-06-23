@@ -5,30 +5,38 @@ export const STATUSES   = ["Backlog", "To Do", "In Progress", "Review", "Done"] 
 
 const taskSchema = new Schema(
     {
-        name: { type: String, required: true, trim: true },
-        description: { type: String, trim: true },
+        name: { type: String, required: true, trim: true, minlength: 1, maxlength: 200 },
+        description: { type: String, trim: true, maxlength: 2500 },
 
         priority: { type: String, enum: PRIORITIES, default: "Medium" },
         status: { type: String, enum: STATUSES, default: "Backlog" },
-        category: { type: String, required: false },
+        category: { type: String, required: false, maxlength: 100 },
 
-        subtasks: [{ 
-            name: { type: String, required: true, trim: true },
-            completed: { type: Boolean, default: false },
-        }],
+        subtasks: {
+            type: [{
+                name: { type: String, required: true, trim: true, minlength: 1, maxlength: 200 },
+                completed: { type: Boolean, default: false },
+            }],
+            default: [],
+            validate: {
+                validator: (value: unknown[]) => value.length <= 100,
+                message: "A task cannot have more than 100 subtasks",
+            },
+        },
 
-        comments: [{
-            author: { type: String, required: true },
-            content: { type: String, required: true, trim: true },
-            createdAt: { type: Date, default: Date.now, required: true },
-        }],
-
-        assignees: [{ type: String }],
+        assignees: {
+            type: [{ type: String, ref: "User" }],
+            default: [],
+            validate: {
+                validator: (value: unknown[]) => value.length <= 50,
+                message: "A task cannot have more than 50 assignees",
+            },
+        },
 
         projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
         teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
         sprintId: { type: Schema.Types.ObjectId, ref: "Sprint" },
-        createdBy: { type: String, required: true }
+        createdBy: { type: String, ref: "User", required: true }
     }, { timestamps: true }
 );
 

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 
 import { handleResponse } from "../lib/response-handler";
 import { buildTeamMembers } from "../lib/team-members";
-import { getUsersByIds } from "../lib/users";
+import { populateUserField, type UserDisplayDocument } from "../lib/users";
 import { Team } from "../models/team";
 import { TeamMembership } from "../models/team-memberships";
 
@@ -16,12 +16,13 @@ export const resolveTeam = async (req: Request, res: Response, next: NextFunctio
   const callerMembership = await TeamMembership.findOne({ teamId, userId: req.user!.id });
   if (!callerMembership) return handleResponse(res, 404, undefined, "You are not a member of this team");
 
-  const memberships = await TeamMembership.find({ teamId });
-  const usersById = await getUsersByIds(memberships.map((membership) => membership.userId));
+  const memberships = await TeamMembership.find({ teamId }).populate<{ userId: UserDisplayDocument }>(
+    populateUserField("userId"),
+  );
 
   req.team = team;
   req.callerMembership = { role: callerMembership.role };
-  req.teamMembers = buildTeamMembers(memberships, usersById);
+  req.teamMembers = buildTeamMembers(memberships);
 
   next();
 };
