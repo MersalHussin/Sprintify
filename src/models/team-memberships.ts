@@ -15,6 +15,13 @@ const teamMembershipSchema = new Schema(
 teamMembershipSchema.index({ teamId: 1, userId: 1 }, { unique: true });
 teamMembershipSchema.index({ userId: 1 });
 
+teamMembershipSchema.virtual("user", {
+  ref: "User",
+  localField: "userId",
+  foreignField: "uid",
+  justOne: true,
+});
+
 export type TeamMembershipDocument = InferSchemaType<typeof teamMembershipSchema> & {
   _id: Types.ObjectId;
 };

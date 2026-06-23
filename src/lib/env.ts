@@ -27,7 +27,7 @@ const envSchema = z
     ];
 
     for (const [key, envName] of alwaysRequired) {
-      if (!data[key]) {
+      if(!data[key]) {
         ctx.addIssue({
           code: "custom",
           message: `${envName} is required`,
@@ -36,7 +36,7 @@ const envSchema = z
       }
     }
 
-    if (data.environment === "prod") {
+    if(data.environment === "prod") {
       const prodRequired: ReadonlyArray<[keyof z.infer<typeof envSchema>, string]> = [
         ["mongoURI", "MONGODB_URI"],
         ["githubToken", "GITHUB_TOKEN"],
@@ -46,7 +46,7 @@ const envSchema = z
       ];
 
       for (const [key, envName] of prodRequired) {
-        if (!data[key]) {
+        if(!data[key]) {
           ctx.addIssue({
             code: "custom",
             message: `${envName} is required in production`,

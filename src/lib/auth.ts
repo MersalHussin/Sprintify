@@ -5,7 +5,7 @@ import type { AuthUser } from "../types/user";
 
 export const bearerToken = (req: Request): string | undefined => {
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return undefined;
+  if(!header?.startsWith("Bearer ")) return undefined;
   return header.slice("Bearer ".length);
 }
 

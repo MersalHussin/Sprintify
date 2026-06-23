@@ -13,28 +13,28 @@ import { TeamMembership } from "../models/team-memberships";
 
 export const resolveProject = async (req: Request, res: Response, next: NextFunction) => {
   const { projectId } = req.params as { projectId: string };
-  if (!projectId) return handleResponse(res, 400, undefined, "Project ID is required");
+  if(!projectId) return handleResponse(res, 400, undefined, "Project ID is required");
 
   const project = await Project.findById(projectId);
-  if (!project) return handleResponse(res, 404, undefined, "Project not found");
+  if(!project) return handleResponse(res, 404, undefined, "Project not found");
 
   const callerMembership = await TeamMembership.findOne({
     teamId: project.teamId,
     userId: req.user!.id,
   });
-  if (!callerMembership)
+  if(!callerMembership)
     return handleResponse(res, 404, undefined, "You are not a member of this team");
 
   const [team, tasks, sprints, memberships] = await Promise.all([
     Team.findById(project.teamId),
     Task.find({ projectId: project._id }).select(TASK_CONTEXT_FIELDS),
     Sprint.find({ projectId: project._id }).select(SPRINT_CONTEXT_FIELDS),
-    TeamMembership.find({ teamId: project.teamId }).populate<{ userId: UserDisplayDocument }>(
-      populateUserField("userId"),
+    TeamMembership.find({ teamId: project.teamId }).populate<{ user: UserDisplayDocument | null }>(
+      populateUserField("user"),
     ),
   ]);
 
-  if (!team) return handleResponse(res, 404, undefined, "Team not found");
+  if(!team) return handleResponse(res, 404, undefined, "Team not found");
 
   const teamMembers = buildTeamMembers(memberships);
   const assigneeUids = tasks.flatMap((task) => task.assignees ?? []);
@@ -44,7 +44,7 @@ export const resolveProject = async (req: Request, res: Response, next: NextFunc
     [...usersByUid.values()].map((user) => [user.uid, toAuthUser(user)]),
   );
   for (const member of teamMembers) {
-    if (member.user) usersById.set(member.userId, member.user);
+    if(member.user) usersById.set(member.userId, member.user);
   }
 
   const projectDetails: ProjectDetails = {

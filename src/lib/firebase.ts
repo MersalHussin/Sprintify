@@ -8,10 +8,10 @@ declare global {
 }
 
 export function getFirebaseApp(): App {
-  if (global._firebaseApp) return global._firebaseApp;
+  if(global._firebaseApp) return global._firebaseApp;
 
   const existingApp = getApps()[0];
-  if (existingApp) {
+  if(existingApp) {
     global._firebaseApp = existingApp;
     return global._firebaseApp;
   }

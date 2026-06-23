@@ -19,9 +19,9 @@ const cached: MongooseCache =
   global._mongooseConnection ?? (global._mongooseConnection = { conn: null, promise: null });
 
 export const connectDB = async (): Promise<typeof mongoose> => {
-  if (cached.conn) return cached.conn;
+  if(cached.conn) return cached.conn;
 
-  if (!cached.promise)
+  if(!cached.promise)
     cached.promise = mongoose
       .connect(mongoURI)
       .then((mongooseInstance) => {
@@ -35,7 +35,7 @@ export const connectDB = async (): Promise<typeof mongoose> => {
 
   cached.conn = await cached.promise;
 
-  const { applySchemaValidators } = await import("./schema-validators");
+  const { applySchemaValidators } = await import("./validators");
   await applySchemaValidators();
 
   return cached.conn;
@@ -45,7 +45,7 @@ export const getDBClient = async (): Promise<Db> => {
   const conn = await connectDB();
   const db = conn.connection.db;
 
-  if (!db) throw new Error("MongoDB database handle unavailable");
+  if(!db) throw new Error("MongoDB database handle unavailable");
 
   return db;
 };

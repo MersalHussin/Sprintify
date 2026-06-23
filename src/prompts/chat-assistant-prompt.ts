@@ -23,7 +23,7 @@ function displayName(usersById: Map<string, AuthUser>, uid: string): string {
 }
 
 function formatAssignees(assignees: string[] | undefined, usersById: Map<string, AuthUser>): string {
-    if (!assignees?.length) return "";
+    if(!assignees?.length) return "";
     return `Assignees: ${assignees.map((uid) => displayName(usersById, uid)).join(", ")}`;
 }
 

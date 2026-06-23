@@ -23,13 +23,13 @@ export async function chatService(
   sessionId: string = "",
 ): Promise<{ sessionId: string; response: ChatCompletionMessageParam }> {
   const { project, projectDetails, promptTeamMembers, usersById } = context;
-  if (!sessionId) sessionId = crypto.randomUUID();
+  if(!sessionId) sessionId = crypto.randomUUID();
 
   const key = `chat:${userId}:${project._id}:${sessionId}`;
   const chat = await global._redisClient?.get(key);
 
   let messages: ChatCompletionMessageParam[] = [];
-  if (chat) messages = JSON.parse(chat);
+  if(chat) messages = JSON.parse(chat);
   else {
     messages.push({
       role: "system",
@@ -52,7 +52,7 @@ export async function chatService(
     content: response?.choices[0]?.message.content,
   };
 
-  if (response) {
+  if(response) {
     messages.push(userMessage);
     messages.push(assistantMessage);
     await global._redisClient?.set(key, JSON.stringify(messages), { EX: env.ttlSeconds });
@@ -75,8 +75,8 @@ export async function taskGenerationService(
   projectId: string,
   message: string
 ): Promise<Task[]> {
-  if (!projectId) throw new Error("Project ID is required");
-  if (!message) throw new Error("Message is required");
+  if(!projectId) throw new Error("Project ID is required");
+  if(!message) throw new Error("Message is required");
   
   const { project, projectDetails, promptTeamMembers, usersById } = context;
 

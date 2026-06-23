@@ -8,7 +8,7 @@ const FIREBASE_GET_USERS_BATCH_SIZE = 100;
 export type UserDisplayDocument = Pick<UserDocument, "uid" | "firstName" | "lastName">;
 
 export function populateUserField(path: string, select: string = USER_DISPLAY_FIELDS) {
-  return { path, foreignField: "uid", localField: path, select };
+  return { path, select };
 }
 
 export async function getUsersByUids(
@@ -16,7 +16,7 @@ export async function getUsersByUids(
   select: string = USER_DISPLAY_FIELDS,
 ): Promise<Map<string, UserDisplayDocument>> {
   const uniqueUids = [...new Set(uids)];
-  if (uniqueUids.length === 0) return new Map();
+  if(uniqueUids.length === 0) return new Map();
 
   const users = await User.find({ uid: { $in: uniqueUids } }).select(select);
   const usersByUid = new Map<string, UserDisplayDocument>();
@@ -41,7 +41,7 @@ export function toAuthUser(user: UserDisplayDocument): AuthUser {
 
 export async function getUsersByIds(uids: string[]): Promise<Map<string, AuthUser>> {
   const uniqueUids = [...new Set(uids)];
-  if (uniqueUids.length === 0) return new Map();
+  if(uniqueUids.length === 0) return new Map();
 
   const auth = getFirebaseAuth();
   const usersById = new Map<string, AuthUser>();

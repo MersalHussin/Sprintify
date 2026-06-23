@@ -3,19 +3,19 @@ import type { TeamMember } from "../types/team";
 import type { TeamMembershipDocument } from "../models/team-memberships";
 import { toAuthUser, type UserDisplayDocument } from "./users";
 
-export type PopulatedTeamMembership = Omit<TeamMembershipDocument, "userId"> & {
-  userId: UserDisplayDocument;
+export type PopulatedTeamMembership = TeamMembershipDocument & {
+  user: UserDisplayDocument | null;
 };
 
 export function buildTeamMembers(memberships: PopulatedTeamMembership[]): TeamMember[] {
   return memberships.map((membership) => {
-    const user = membership.userId;
+    const user = membership.user;
 
     return {
-      userId: user.uid,
+      userId: membership.userId,
       role: membership.role,
       joinedAt: membership.joinedAt,
-      user: toAuthUser(user),
+      user: user ? toAuthUser(user) : null,
     };
   });
 }
