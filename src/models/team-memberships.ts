@@ -14,6 +14,8 @@ const teamMembershipSchema = new Schema(
 
 teamMembershipSchema.index({ teamId: 1, userId: 1 }, { unique: true });
 teamMembershipSchema.index({ userId: 1 });
+// Supports exists({ userId, teamId: { $in: [...] } }) with equality on userId first.
+teamMembershipSchema.index({ userId: 1, teamId: 1 });
 
 teamMembershipSchema.virtual("user", {
   ref: "User",

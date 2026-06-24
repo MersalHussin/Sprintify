@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import type { ProjectDetails } from "../prompts/chat-assistant-prompt";
 import { handleResponse } from "../lib/response-handler";
 import { buildTeamMembers, toPromptTeamMembers } from "../lib/team-members";
-import { SPRINT_CONTEXT_FIELDS, TASK_CONTEXT_FIELDS } from "../lib/query-projections";
+import { SPRINT_CONTEXT_FIELDS, TASK_CONTEXT_FIELDS, MEMBERSHIP_ROLE_FIELDS, MEMBERSHIP_LIST_FIELDS } from "../lib/query-projections";
 import { getUsersByUids, populateUserField, toAuthUser, type UserDisplayDocument } from "../lib/users";
 import { Project } from "../models/project";
 import { Sprint } from "../models/sprint";
@@ -21,7 +21,7 @@ export const resolveProject = async (req: Request, res: Response, next: NextFunc
   const callerMembership = await TeamMembership.findOne({
     teamId: project.teamId,
     userId: req.user!.id,
-  });
+  }).select(MEMBERSHIP_ROLE_FIELDS);
   if(!callerMembership)
     return handleResponse(res, 404, undefined, "You are not a member of this team");
 
@@ -29,7 +29,9 @@ export const resolveProject = async (req: Request, res: Response, next: NextFunc
     Team.findById(project.teamId),
     Task.find({ projectId: project._id }).select(TASK_CONTEXT_FIELDS),
     Sprint.find({ projectId: project._id }).select(SPRINT_CONTEXT_FIELDS),
-    TeamMembership.find({ teamId: project.teamId }).populate<{ user: UserDisplayDocument | null }>(
+    TeamMembership.find({ teamId: project.teamId })
+      .select(MEMBERSHIP_LIST_FIELDS)
+      .populate<{ user: UserDisplayDocument | null }>(
       populateUserField("user"),
     ),
   ]);

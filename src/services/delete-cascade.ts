@@ -13,7 +13,8 @@ async function deleteCommentsForTasks(
   taskFilter: Record<string, unknown>,
   session: ClientSession,
 ): Promise<void> {
-  const taskIds = await Task.find(taskFilter).distinct("_id").session(session);
+  // distinct(filter) issues one indexed scan; find().distinct() would hydrate full task docs first.
+  const taskIds = (await Task.distinct("_id", taskFilter).session(session)) as Types.ObjectId[];
   if(taskIds.length === 0) return;
   await TaskComment.deleteMany({ taskId: { $in: taskIds } }).session(session);
 }

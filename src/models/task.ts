@@ -44,6 +44,8 @@ taskSchema.index({ projectId: 1, sprintId: 1 });
 taskSchema.index({ projectId: 1, status: 1 });
 taskSchema.index({ teamId: 1 });
 taskSchema.index({ assignees: 1 });
+// Sparse index: sprint delete runs updateMany({ sprintId }); without this, MongoDB scans by projectId.
+taskSchema.index({ sprintId: 1 }, { sparse: true });
 
 export type TaskDocument = InferSchemaType<typeof taskSchema> & {
     _id: Types.ObjectId

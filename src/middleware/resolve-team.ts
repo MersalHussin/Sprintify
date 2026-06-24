@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import { handleResponse } from "../lib/response-handler";
 import { buildTeamMembers } from "../lib/team-members";
 import { populateUserField, type UserDisplayDocument } from "../lib/users";
+import { MEMBERSHIP_LIST_FIELDS, MEMBERSHIP_ROLE_FIELDS } from "../lib/query-projections";
 import { Team } from "../models/team";
 import { TeamMembership } from "../models/team-memberships";
 
@@ -13,10 +14,13 @@ export const resolveTeam = async (req: Request, res: Response, next: NextFunctio
   const team = await Team.findById(teamId);
   if(!team) return handleResponse(res, 404, undefined, "Team not found");
 
-  const callerMembership = await TeamMembership.findOne({ teamId, userId: req.user!.id });
+  const callerMembership = await TeamMembership.findOne({ teamId, userId: req.user!.id })
+    .select(MEMBERSHIP_ROLE_FIELDS);
   if(!callerMembership) return handleResponse(res, 404, undefined, "You are not a member of this team");
 
-  const memberships = await TeamMembership.find({ teamId }).populate<{ user: UserDisplayDocument | null }>(
+  const memberships = await TeamMembership.find({ teamId })
+    .select(MEMBERSHIP_LIST_FIELDS)
+    .populate<{ user: UserDisplayDocument | null }>(
     populateUserField("user"),
   );
 

@@ -4,6 +4,7 @@ import { TeamMembership } from "../models/team-memberships";
 import { Team } from "../models/team";
 import type { TeamRole } from "../types/team";
 import { handleResponse } from "../lib/response-handler";
+import { MEMBERSHIP_ROLE_FIELDS } from "../lib/query-projections";
 
 export const requireTeamRole = (role: TeamRole) => async (req: Request, res: Response, next: NextFunction) => {
   const teamId = req.params.teamId ?? req.project?.teamId.toString();
@@ -27,7 +28,7 @@ export const requireTeamRole = (role: TeamRole) => async (req: Request, res: Res
       : undefined;
 
   if(!callerRole) {
-    callerRole = (await TeamMembership.findOne({ teamId, userId: req.user!.id }))?.role;
+    callerRole = (await TeamMembership.findOne({ teamId, userId: req.user!.id }).select(MEMBERSHIP_ROLE_FIELDS))?.role;
   }
 
   if(!callerRole) return handleResponse(res, 404, undefined, "You are not a member of this team");

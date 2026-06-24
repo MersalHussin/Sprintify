@@ -12,6 +12,8 @@ const invitationSchema = new Schema(
 
 invitationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 invitationSchema.index({ teamId: 1, email: 1 }, { unique: true });
+// deleteOne({ teamId, token }) uses both fields; compound index avoids post-filter on token alone.
+invitationSchema.index({ teamId: 1, token: 1 });
 
 export type InvitationDocument = InferSchemaType<typeof invitationSchema> & {
     _id: Types.ObjectId

@@ -18,6 +18,7 @@ export const createTeamService = async (userId: string, name: string) => {
 export const listUserTeamsService = async (userId: string) => {
   const memberships = await TeamMembership.find({ userId }).select("teamId");
   if(memberships.length === 0) return [];
+  // $in on _id uses the primary key index; avoids a $lookup aggregation for a simple list.
   return Team.find({ _id: { $in: memberships.map((m) => m.teamId) } });
 };
 
