@@ -3,6 +3,7 @@ import { TaskComment } from "../models/task-comment";
 import type { ProjectDocument } from "../models/project";
 import { TeamMembership } from "../models/team-memberships";
 import { assertTaskMember } from "../lib/task-access";
+import { buildPaginatedResult, type PaginationParams } from "../lib/pagination";
 import { omitKeys } from "../types/api";
 import type {
   CommentInput,
@@ -19,9 +20,18 @@ type SubtaskPositionalUpdate = {
 };
 
 // Task retrieval services
-export const getTasksByProjectIdService = async (projectId: string) => {
-  // Uses { projectId: 1, ... } compound indexes; returns full documents for the task board UI.
-  return Task.find({ projectId });
+export const getTasksByProjectIdService = async (
+  projectId: string,
+  pagination: PaginationParams | null = null,
+) => {
+  const filter = { projectId };
+  if(!pagination) return Task.find(filter);
+
+  const [items, total] = await Promise.all([
+    Task.find(filter).skip(pagination.skip).limit(pagination.limit),
+    Task.countDocuments(filter),
+  ]);
+  return buildPaginatedResult(items, total, pagination);
 };
 
 export const getTaskByIdService = async (taskId: string, userId: string) => {

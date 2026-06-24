@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import type { Types } from "mongoose";
 
+import { buildPaginatedResult, type PaginationParams } from "../lib/pagination";
 import { Invitation } from "../models/invitation";
 import { Team, type TeamDocument } from "../models/team";
 import { TeamMembership } from "../models/team-memberships";
@@ -15,11 +16,24 @@ export const createTeamService = async (userId: string, name: string) => {
   return team;
 };
 
-export const listUserTeamsService = async (userId: string) => {
+export const listUserTeamsService = async (
+  userId: string,
+  pagination: PaginationParams | null = null,
+) => {
   const memberships = await TeamMembership.find({ userId }).select("teamId");
-  if(memberships.length === 0) return [];
-  // $in on _id uses the primary key index; avoids a $lookup aggregation for a simple list.
-  return Team.find({ _id: { $in: memberships.map((m) => m.teamId) } });
+  if(memberships.length === 0) {
+    return pagination ? buildPaginatedResult([], 0, pagination) : [];
+  }
+
+  const teamIds = memberships.map((m) => m.teamId);
+  if(!pagination) return Team.find({ _id: { $in: teamIds } });
+
+  const filter = { _id: { $in: teamIds } };
+  const [items, total] = await Promise.all([
+    Team.find(filter).skip(pagination.skip).limit(pagination.limit),
+    Team.countDocuments(filter),
+  ]);
+  return buildPaginatedResult(items, total, pagination);
 };
 
 export const joinTeamViaInvitationService = async (

@@ -4,9 +4,17 @@ import { asyncHandler } from "../lib/async-handler";
 import { handleResponse } from "../lib/response-handler";
 import { chatService, getChatHistoryService, taskGenerationService } from "./services";
 
+const MAX_AI_MESSAGE_LENGTH = 4000;
+
+function validateAiMessage(message: unknown): message is string {
+  return typeof message === "string" && message.length > 0 && message.length <= MAX_AI_MESSAGE_LENGTH;
+}
+
 export const chat = asyncHandler(async (req: Request, res: Response) => {
   const { message, sessionId: sessionIdParam } = req.body;
-  if(!message) return handleResponse(res, 400, undefined, "Message is required");
+  if(!validateAiMessage(message)) {
+    return handleResponse(res, 400, undefined, "Message must be 1–4000 characters");
+  }
 
   const { sessionId, response } = await chatService(
     req.user!.id,
@@ -24,7 +32,9 @@ export const chat = asyncHandler(async (req: Request, res: Response) => {
 
 export const taskGeneration = asyncHandler(async (req: Request, res: Response) => {
   const { message } = req.body;
-  if(!message) return handleResponse(res, 400, undefined, "Message is required");
+  if(!validateAiMessage(message)) {
+    return handleResponse(res, 400, undefined, "Message must be 1–4000 characters");
+  }
 
   const tasks = await taskGenerationService(
     req.user!.id,

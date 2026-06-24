@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 
 import { handleResponse } from "../lib/response-handler";
+import { parseOptionalPagination } from "../lib/pagination";
+import { isRecord } from "../types/api";
 import { deleteTeamCascade } from "../services/delete-cascade";
 import { createTeamInvitationService, createTeamService, deleteInvitationService, joinTeamViaInvitationService, listTeamInvitationsService, listUserTeamsService, updateTeamMemberRoleService, updateTeamService } from "./services";
 
@@ -16,8 +18,10 @@ export const createTeam = async (req: Request, res: Response) => {
 
 export const listUserTeams = async (req: Request, res: Response) => {
   try {
-    const teams = await listUserTeamsService(req.user!.id);
-    return handleResponse(res, 200, { teams });
+    const pagination = parseOptionalPagination(isRecord(req.query) ? req.query : {});
+    const result = await listUserTeamsService(req.user!.id, pagination);
+    if(pagination) return handleResponse(res, 200, result);
+    return handleResponse(res, 200, { teams: result });
   } catch (error) {
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
