@@ -13,6 +13,9 @@ const envSchema = z
     firebasePrivateKey: z.string().default(""),
     frontendUrl: z.string().default("http://localhost:3000/"),
     githubToken: z.string().default(""),
+    aiChatModel: z.string().default(""),
+    aiTaskModel: z.string().default(""),
+    /** Legacy fallback when AI_CHAT_MODEL / AI_TASK_MODEL are unset. */
     aiModel: z.string().default(""),
     redisURL: z.string().default("redis://127.0.0.1:6379"),
     ttlSeconds: z.coerce.number().int().positive().default(7200), // 120 mins
@@ -40,7 +43,6 @@ const envSchema = z
       const prodRequired: ReadonlyArray<[keyof z.infer<typeof envSchema>, string]> = [
         ["mongoURI", "MONGODB_URI"],
         ["githubToken", "GITHUB_TOKEN"],
-        ["aiModel", "AI_MODEL"],
         ["redisURL", "REDIS_URL"],
         ["frontendUrl", "FRONTEND_URL"],
       ];
@@ -54,12 +56,36 @@ const envSchema = z
           });
         }
       }
+
+      const chatModel = data.aiChatModel || data.aiModel;
+      const taskModel = data.aiTaskModel || data.aiModel;
+
+      if(!chatModel) {
+        ctx.addIssue({
+          code: "custom",
+          message: "AI_CHAT_MODEL or AI_MODEL is required in production",
+          path: ["aiChatModel"],
+        });
+      }
+
+      if(!taskModel) {
+        ctx.addIssue({
+          code: "custom",
+          message: "AI_TASK_MODEL or AI_MODEL is required in production",
+          path: ["aiTaskModel"],
+        });
+      }
     }
   });
 
-export type Environment = z.infer<typeof envSchema>;
+type ParsedEnvironment = z.infer<typeof envSchema>;
 
-const env: Readonly<Environment> = envSchema.parse({
+export type Environment = Omit<ParsedEnvironment, "aiModel"> & {
+  aiChatModel: string;
+  aiTaskModel: string;
+};
+
+const parsed: ParsedEnvironment = envSchema.parse({
   port: process.env.PORT,
   mongoURI: process.env.MONGODB_URI,
   environment: process.env.ENVIRONMENT,
@@ -68,10 +94,18 @@ const env: Readonly<Environment> = envSchema.parse({
   firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY,
   frontendUrl: process.env.FRONTEND_URL,
   githubToken: process.env.GITHUB_TOKEN,
+  aiChatModel: process.env.AI_CHAT_MODEL,
+  aiTaskModel: process.env.AI_TASK_MODEL,
   aiModel: process.env.AI_MODEL,
   redisURL: process.env.REDIS_URL,
   ttlSeconds: process.env.TTL_SECONDS,
   aiBaseURL: process.env.AI_BASE_URL,
 });
+
+const env: Readonly<Environment> = {
+  ...parsed,
+  aiChatModel: parsed.aiChatModel || parsed.aiModel,
+  aiTaskModel: parsed.aiTaskModel || parsed.aiModel,
+};
 
 export default env;

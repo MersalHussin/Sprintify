@@ -40,7 +40,7 @@ export async function chatService(
   const userMessage: ChatCompletionMessageParam = { role: "user", content: message };
 
   const response = await openai.chat.completions.create({
-    model: env.aiModel,
+    model: env.aiChatModel,
     messages: [...messages, userMessage],
     stream: false,
     max_tokens: 1024,
@@ -83,11 +83,11 @@ export async function taskGenerationService(
   ];
 
   const response = await openai.chat.completions.create({
-    model: env.aiModel,
+    model: env.aiTaskModel,
     messages,
     stream: false,
     max_tokens: 1024,
-    temperature: 0.7,
+    temperature: 0.3,
     response_format: {
       type: "json_object",
     },

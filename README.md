@@ -66,11 +66,13 @@ Copy `.env.example` and set:
 | `FIREBASE_PRIVATE_KEY` | Yes | — | Use `\n` for newlines in the key |
 | `GITHUB_TOKEN` | Yes | — | API key for the AI client |
 | `AI_BASE_URL` | No | `https://models.github.ai/inference` | OpenAI-compatible base URL |
-| `AI_MODEL` | Prod | — | e.g. `openai/gpt-4.1` |
+| `AI_CHAT_MODEL` | Prod* | — | Chat assistant, e.g. `meta/llama-3.3-70b-instruct` |
+| `AI_TASK_MODEL` | Prod* | — | Task generation, e.g. `openai/gpt-4.1-mini` |
+| `AI_MODEL` | Prod* | — | Legacy fallback when chat/task model vars are unset |
 | `TTL_SECONDS` | No | `7200` | Redis TTL for chat history (seconds) |
 | `ENVIRONMENT` | No | `dev` | `dev` or `prod` |
 
-Firebase credentials and `GITHUB_TOKEN` are always required. Additional vars are enforced when `ENVIRONMENT=prod`.
+Firebase credentials and `GITHUB_TOKEN` are always required. Additional vars are enforced when `ENVIRONMENT=prod`. In production, set `AI_CHAT_MODEL` and `AI_TASK_MODEL` (or `AI_MODEL` as a fallback for both).
 
 ## Authentication
 
@@ -202,7 +204,7 @@ Task `priority`: `Urgent`, `High`, `Medium`, `Low`. Task `status`: `Backlog`, `T
 | POST | `/:projectId/tasks` | manager | `{ "message": string }` |
 | POST | `/:projectId/chat-history/:sessionId` | member+ | — |
 
-Messages must be 1–4000 characters. Chat returns `{ sessionId, response }`. Task generation returns `{ tasks }` as structured suggestions. The chat assistant is scoped to Agile PM help for the project; prompts include injection guards.
+Messages must be 1–4000 characters. Chat uses `AI_CHAT_MODEL`; task generation uses `AI_TASK_MODEL` (lower temperature for steadier JSON). Chat returns `{ sessionId, response }`. Task generation returns `{ tasks }` as structured suggestions. The chat assistant is scoped to Agile PM help for the project; prompts include injection guards.
 
 ## Project layout
 

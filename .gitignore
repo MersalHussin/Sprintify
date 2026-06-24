@@ -5,5 +5,4 @@ dist
 graphify-out
 node_modules
 .env
-**.md
 scripts
