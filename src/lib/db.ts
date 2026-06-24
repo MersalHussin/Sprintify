@@ -19,6 +19,11 @@ const cached: MongooseCache =
   global._mongooseConnection ?? (global._mongooseConnection = { conn: null, promise: null });
 
 export const connectDB = async (): Promise<typeof mongoose> => {
+  if(mongoose.connection.readyState === 1) {
+    cached.conn = mongoose;
+    return mongoose;
+  }
+
   if(cached.conn) return cached.conn;
 
   if(!cached.promise)
