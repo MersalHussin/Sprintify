@@ -1,6 +1,9 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { AuthProvider } from "@/context/auth-context";
+import { ThemeProvider } from "@/context/theme-context";
+import { ContactModalProvider } from "@/context/contact-modal-context";
+import { ContactModal } from "@/components/ui/contact-modal";
 
 const Home = lazy(() => import("./components/pages/home"));
 const Login = lazy(() => import("./components/pages/login"));
@@ -11,10 +14,15 @@ const Terms = lazy(() => import("./components/pages/terms"));
 const NotFound = lazy(() => import("./components/pages/not-found"));
 const AI = lazy(() => import("./components/pages/ai"));
 const Kanban = lazy(() => import("./components/kanban/kanban"));
+const Settings = lazy(() => import("./components/pages/settings"));
+const Boards = lazy(() => import("./components/pages/boards.tsx"));
+import Layout from "./components/layout/Layout";
+import Workspaces from "./components/kanban/Workspaces";
+import Board from "./components/kanban/Board";
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background text-foreground">
+    <div className="flex min-h-svh items-center justify-center bg-background text-foreground dark:bg-slate-950 dark:text-white">
       <p className="font-sans text-sm text-muted-foreground">Loading…</p>
     </div>
   );
@@ -22,25 +30,38 @@ function RouteFallback() {
 
 function App() {
   return (
-    <AuthProvider>
-      <div className="min-h-svh bg-background text-foreground">
-        <BrowserRouter>
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route index path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/ai" element={<AI />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/kanban" element={<Kanban />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </div>
-    </AuthProvider>
+    <ThemeProvider>
+      <ContactModalProvider>
+        <AuthProvider>
+        <div className="min-h-svh bg-background text-foreground dark:bg-slate-950 dark:text-white transition-colors duration-200">
+          <BrowserRouter>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                {/* Public / Unwrapped Routes */}
+                <Route index path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="*" element={<NotFound />} />
+                <Route path="/board/:boardId" element={<Board />} />
+                
+                {/* Routes Wrapped in Layout Sidebar */}
+                <Route element={<Layout />}>
+                  <Route path="/workspaces" element={<Workspaces />} />
+                  <Route path="/kanban" element={<Kanban />} />
+                  <Route path="/ai" element={<AI />} />
+                  <Route path="/boards" element={<Boards />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          <ContactModal />
+        </div>
+      </AuthProvider>
+      </ContactModalProvider>
+    </ThemeProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from 'react-icons/fa6';
+import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from  'react-icons/fa6'
 
 
 interface GenerationPayload {
@@ -71,7 +71,7 @@ export default function PromptInput() {
       >
         
         <div className="pl-4 pr-2 text-blue-500">
-          <FaRegLightbulb className="text-xl" />
+          <FaRegLightbulb  />
         </div>
 
         <input

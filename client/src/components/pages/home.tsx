@@ -1,5 +1,4 @@
-import { ContactModalProvider } from "@/context/contact-modal-context";
-import { ContactModal } from "@/components/ui/contact-modal";
+
 
 import { Cta } from "../sections/cta";
 import { Faq } from "../sections/faq";
@@ -11,7 +10,7 @@ import { Newsletter } from "../sections/newsletter";
 
 const Home = () => {
   return (
-    <ContactModalProvider>
+    <>
       <Navbar />
       <main>
         <Hero />
@@ -21,10 +20,7 @@ const Home = () => {
         <Newsletter />
       </main>
       <Footer />
-
-      {/* Rendered once — any component can open it via useContactModal() */}
-      <ContactModal />
-    </ContactModalProvider>
+    </>
   );
 };
 

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from "react";
-import Aside from "./Aside";
-import { FaPlus, FaFilter, FaTrash, FaArrowLeft } from "react-icons/fa6";
+import { useParams, useNavigate } from "react-router";
+
+import { FaPlus, FaFilter, FaTrash, FaArrowLeft, FaUsers } from "react-icons/fa6";
 import Swal from "sweetalert2";
 import {
   DragDropContext,
@@ -8,13 +10,9 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
+import Teams from "./Teams";
 
-// 1. تعريف الـ Props للـ Component
-interface BoardProps {
-  boardId: string | number;
-  boardTitle: string;
-  onBack: () => void;
-}
+// 1. حذفنا الـ BoardProps لأننا هنجيب الـ boardId من الـ URL
 
 // 2. تعريف شكل الـ Column
 interface ColumnType {
@@ -32,10 +30,14 @@ interface TaskType {
   tagColor?: string;
 }
 
-export default function Board({ boardId, boardTitle, onBack }: BoardProps) {
+export default function Board() {
+  const { boardId } = useParams();
+  const navigate = useNavigate();
+  const [boardTitle, setBoardTitle] = useState("Loading...");
   const [columns, setColumns] = useState<ColumnType[]>([]);
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [editingColId, setEditingColId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"board" | "team">("board");
 
   // ==========================================
   // 1. جلب البيانات المفلترة حسب الـ boardId الحالي
@@ -224,15 +226,12 @@ export default function Board({ boardId, boardTitle, onBack }: BoardProps) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Aside />
-
-      <main className="flex-1 flex flex-col p-8 overflow-hidden">
+    <div className="flex-1 flex flex-col p-8 overflow-y-auto">
         {/* رأس البورد */}
         <div className="flex justify-between items-center mb-8 flex-shrink-0">
           <div>
             <button
-              onClick={onBack}
+              onClick={() => navigate('/workspaces')}
               className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-bold mb-2 transition-colors uppercase tracking-wider"
             >
               <FaArrowLeft /> Back to Workspaces
@@ -244,21 +243,35 @@ export default function Board({ boardId, boardTitle, onBack }: BoardProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm">
-              <FaFilter className="text-gray-500" />
-              Filter
-            </button>
-            <button
-              onClick={handleAddColumn}
-              className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm"
+            <button 
+              onClick={() => setActiveTab(activeTab === 'team' ? 'board' : 'team')}
+              className={`flex items-center gap-2 border px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm ${
+                activeTab === 'team' 
+                  ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
+                  : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
+              }`}
             >
-              <FaPlus />
-              Add Column
+              <FaUsers className={activeTab === 'team' ? 'text-blue-600' : 'text-gray-500'} />
+              {activeTab === 'team' ? 'Back to Board' : 'Team Members'}
             </button>
+            {activeTab === 'board' && (
+              <button
+                onClick={handleAddColumn}
+                className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm"
+              >
+                <FaPlus />
+                Add Column
+              </button>
+            )}
           </div>
         </div>
 
-        <DragDropContext onDragEnd={onDragEnd}>
+        {activeTab === 'team' ? (
+          <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <Teams />
+          </div>
+        ) : (
+          <DragDropContext onDragEnd={onDragEnd}>
           <div className="flex-1 overflow-x-auto pb-4">
             <div className="flex gap-6 h-full items-start">
               {columns.map((column) => (
@@ -375,7 +388,7 @@ export default function Board({ boardId, boardTitle, onBack }: BoardProps) {
             </div>
           </div>
         </DragDropContext>
-      </main>
+        )}
     </div>
   );
 }

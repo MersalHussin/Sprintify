@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Dashboard from './Dashboard'; // شيلنا components/ لأنهم مع بعض في نفس الفولدر
+import Dashboard from './Workspaces'; // شيلنا components/ لأنهم مع بعض في نفس الفولدر
 import Board from './Board';         // شيلنا components/ لأنهم مع بعض في نفس الفولدر
 
 interface SelectedBoardType {

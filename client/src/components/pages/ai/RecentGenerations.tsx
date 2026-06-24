@@ -53,7 +53,7 @@ export default function RecentGenerations() {
         </h2>
         <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
           View History
-          <FaArrowUpRightFromSquare className="text-xs" />
+          <FaArrowUpRightFromSquare />
         </a>
       </div>
 
@@ -68,7 +68,7 @@ export default function RecentGenerations() {
             <div className="flex items-center gap-4">
               
               <div className="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center flex-shrink-0 shadow-inner">
-                <FaLayerGroup className="text-xl" />
+                <FaLayerGroup />
               </div>
 
               <div className="flex flex-col">
