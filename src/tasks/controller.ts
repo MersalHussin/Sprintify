@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import { handleResponse } from "../lib/response-handler";
+import { sendRouteError } from "../middleware/error-handler";
 import { parseOptionalPagination } from "../lib/pagination";
 import { isRecord } from "../types/api";
 import {
@@ -47,6 +48,7 @@ export const createTask = async (req: Request, res: Response) => {
     const task = await createTaskService(req.user!.id, req.project!, req.body);
     return handleResponse(res, 201, { task });
   } catch (error) {
+    if(sendRouteError(res, error)) return;
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }
@@ -141,6 +143,7 @@ export const editComment = async (req: Request, res: Response) => {
     const comment = await editCommentService(taskId, commentId, req.user!.id, req.body);
     return handleResponse(res, 200, { comment });
   } catch (error) {
+    if(sendRouteError(res, error)) return;
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }
@@ -155,6 +158,7 @@ export const deleteComment = async (req: Request, res: Response) => {
     await deleteCommentService(taskId, commentId, req.user!.id);
     return handleResponse(res, 200, undefined, "Comment deleted successfully");
   } catch (error) {
+    if(sendRouteError(res, error)) return;
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }

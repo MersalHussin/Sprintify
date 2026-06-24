@@ -159,7 +159,8 @@ export const editCommentService = async (
 
 export const deleteCommentService = async (taskId: string, commentId: string, userId: string) => {
   const existing = await TaskComment.findOne({ _id: commentId, taskId });
-  if(!existing || existing.author !== userId) throw new Error("Comment not found");
+  if(!existing) throw new Error("Comment not found");
+  if(existing.author !== userId) throw new Error("Forbidden");
 
   await assertTaskMember(taskId, userId);
 

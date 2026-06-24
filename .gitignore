@@ -1,7 +1,9 @@
+.cursor
 .fallow
 .vscode
 dist
+graphify-out
 node_modules
 .env
-graphify-out
 **.md
+scripts

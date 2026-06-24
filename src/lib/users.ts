@@ -5,7 +5,7 @@ import type { AuthUser } from "../types/user";
 
 const FIREBASE_GET_USERS_BATCH_SIZE = 100;
 
-export type UserDisplayDocument = Pick<UserDocument, "uid" | "firstName" | "lastName">;
+export type UserDisplayDocument = Pick<UserDocument, "uid" | "firstName" | "lastName" | "professionalTitle">;
 
 export function populateUserField(path: string, select: string = USER_DISPLAY_FIELDS) {
   return { path, select };
@@ -36,6 +36,7 @@ export function toAuthUser(user: UserDisplayDocument): AuthUser {
   return {
     id: user.uid,
     name: userDisplayName(user),
+    professionalTitle: user.professionalTitle,
   };
 }
 

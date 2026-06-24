@@ -3,4 +3,5 @@ export type AuthUser = {
   email?: string;
   emailVerified?: boolean;
   name?: string;
+  professionalTitle?: string;
 };

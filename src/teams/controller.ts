@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import { handleResponse } from "../lib/response-handler";
+import { sendRouteError } from "../middleware/error-handler";
 import { parseOptionalPagination } from "../lib/pagination";
 import { isRecord } from "../types/api";
 import { deleteTeamCascade } from "../services/delete-cascade";
@@ -11,6 +12,7 @@ export const createTeam = async (req: Request, res: Response) => {
     const team = await createTeamService(req.user!.id, req.body.name);
     return handleResponse(res, 201, { team });
   } catch (error) {
+    if(sendRouteError(res, error)) return;
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }
