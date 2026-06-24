@@ -1,0 +1,22 @@
+import { Schema, model, type InferSchemaType, type Types } from "mongoose";
+
+const invitationSchema = new Schema(
+    {
+        teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
+        email: { type: String, required: true, trim: true, lowercase: true, minlength: 3, maxlength: 254 },
+        token: { type: String, required: true, unique: true },
+        invitedBy: { type: String, ref: "User", required: true },
+        expiresAt: { type: Date, required: true }
+    }, { timestamps: true }
+);
+
+invitationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+invitationSchema.index({ teamId: 1, email: 1 }, { unique: true });
+// deleteOne({ teamId, token }) uses both fields; compound index avoids post-filter on token alone.
+invitationSchema.index({ teamId: 1, token: 1 });
+
+export type InvitationDocument = InferSchemaType<typeof invitationSchema> & {
+    _id: Types.ObjectId
+};
+
+export const Invitation = model("Invitation", invitationSchema);

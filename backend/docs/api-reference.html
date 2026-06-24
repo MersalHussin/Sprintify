@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprintify API Reference</title>
+<style>
+:root {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --surface2: #243044;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --border: #30363d;
+  --accent: #58a6ff;
+  --get: #3fb950;
+  --post: #d29922;
+  --put: #a371f7;
+  --patch: #f0883e;
+  --delete: #f85149;
+  --code-bg: #161b22;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } nav { position: static !important; height: auto !important; } }
+nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem;
+}
+nav h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent); }
+.toc-group { margin-bottom: 1.25rem; }
+.toc-group h3 { font-size: 0.85rem; margin-bottom: 0.4rem; }
+.toc-group ul { list-style: none; }
+.toc-group li { margin: 0.15rem 0; }
+.toc-group a { font-size: 0.78rem; color: var(--muted); word-break: break-all; }
+.toc-group a:hover { color: var(--accent); }
+main { padding: 2rem 2.5rem; max-width: 960px; }
+header.doc-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+header.doc-header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+header.doc-header p { color: var(--muted); }
+.info-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1.25rem; margin-bottom: 2rem;
+}
+.info-box h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+.info-box ul { margin-left: 1.25rem; color: var(--muted); }
+.info-box li { margin: 0.3rem 0; }
+.info-box code { background: var(--code-bg); padding: 0.15rem 0.4rem; border-radius: 4px; font-family: var(--mono); font-size: 0.85rem; }
+section.endpoint {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1.5rem; margin-bottom: 2rem; scroll-margin-top: 1rem;
+}
+.endpoint-header { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.method {
+  display: inline-block; padding: 0.2rem 0.55rem; border-radius: 4px;
+  font-size: 0.75rem; font-weight: 700; font-family: var(--mono); color: #fff;
+}
+.method-get { background: var(--get); }
+.method-post { background: var(--post); color: #000; }
+.method-put { background: var(--put); }
+.method-patch { background: var(--patch); color: #000; }
+.method-delete { background: var(--delete); }
+.path { font-family: var(--mono); font-size: 0.95rem; background: var(--code-bg); padding: 0.25rem 0.5rem; border-radius: 4px; }
+.module-tag { font-size: 0.72rem; background: var(--surface2); color: var(--muted); padding: 0.15rem 0.5rem; border-radius: 4px; }
+.role-badge { font-size: 0.72rem; background: #3d1f00; color: #f0883e; padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid #f0883e44; }
+.desc { color: var(--muted); margin-bottom: 1rem; }
+.muted { color: var(--muted); font-style: italic; }
+section.endpoint h4 { font-size: 0.9rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+section.endpoint h5 { font-size: 0.82rem; margin: 0.75rem 0 0.35rem; color: var(--muted); }
+.param-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.5rem 0; }
+.param-table th, .param-table td { border: 1px solid var(--border); padding: 0.45rem 0.65rem; text-align: left; vertical-align: top; }
+.param-table th { background: var(--surface2); color: var(--muted); font-weight: 600; }
+.param-table code { background: var(--code-bg); padding: 0.1rem 0.3rem; border-radius: 3px; font-family: var(--mono); font-size: 0.8rem; }
+pre {
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1rem; overflow-x: auto; margin: 0.5rem 0;
+}
+code { font-family: var(--mono); font-size: 0.82rem; }
+.language-json .hljs-string, pre code .str { color: #a5d6ff; }
+.language-json .hljs-number, pre code .num { color: #79c0ff; }
+.language-json .hljs-literal, pre code .lit { color: #ff7b72; }
+.language-json .hljs-attr, pre code .key { color: #7ee787; }
+.language-bash, pre code { color: #e6edf3; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll("pre code.language-json").forEach(function(el) {
+    var html = el.innerHTML;
+    html = html.replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:');
+    html = html.replace(/: "([^"]*)"/g, ': <span class="str">"$1"</span>');
+    html = html.replace(/: (\d+)/g, ': <span class="num">$1</span>');
+    html = html.replace(/: (true|false|null)/g, ': <span class="lit">$1</span>');
+    el.innerHTML = html;
+  });
+});
+</script>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>Table of Contents</h2>
+  
+  <div class="toc-group">
+    <h3><span class="method method-get">GET</span></h3>
+    <ul><li><a href="#get-health">GET /health</a></li><li><a href="#get-users-me">GET /api/users/me</a></li><li><a href="#get-users-id">GET /api/users/{userId}</a></li><li><a href="#get-teams">GET /api/teams</a></li><li><a href="#get-teams-id">GET /api/teams/{teamId}</a></li><li><a href="#get-teams-projects">GET /api/teams/{teamId}/projects</a></li><li><a href="#get-teams-invitations">GET /api/teams/{teamId}/invitations</a></li><li><a href="#get-projects-id">GET /api/projects/{projectId}</a></li><li><a href="#get-projects-tasks">GET /api/projects/{projectId}/tasks</a></li><li><a href="#get-projects-sprints">GET /api/projects/{projectId}/sprints</a></li><li><a href="#get-sprints-id">GET /api/sprints/{sprintId}</a></li><li><a href="#get-tasks-id">GET /api/tasks/{taskId}</a></li></ul>
+  </div>
+  <div class="toc-group">
+    <h3><span class="method method-post">POST</span></h3>
+    <ul><li><a href="#post-teams">POST /api/teams</a></li><li><a href="#post-teams-join">POST /api/teams/{invitationCode}</a></li><li><a href="#post-teams-accept">POST /api/teams/{invitationToken}/accept</a></li><li><a href="#post-teams-projects">POST /api/teams/{teamId}/projects</a></li><li><a href="#post-teams-invitations">POST /api/teams/{teamId}/invitations</a></li><li><a href="#post-projects-tasks">POST /api/projects/{projectId}/tasks</a></li><li><a href="#post-projects-sprints">POST /api/projects/{projectId}/sprints</a></li><li><a href="#post-sprints-complete">POST /api/sprints/{sprintId}/complete</a></li><li><a href="#post-tasks-subtasks">POST /api/tasks/{taskId}/subtasks</a></li><li><a href="#post-tasks-comments">POST /api/tasks/{taskId}/comments</a></li><li><a href="#post-ai-chat">POST /api/ai/{projectId}/chat</a></li><li><a href="#post-ai-tasks">POST /api/ai/{projectId}/tasks</a></li><li><a href="#post-ai-chat-history">POST /api/ai/{projectId}/chat-history/{sessionId}</a></li></ul>
+  </div>
+  <div class="toc-group">
+    <h3><span class="method method-put">PUT</span></h3>
+    <ul><li><a href="#put-projects-id">PUT /api/projects/{projectId}</a></li><li><a href="#put-sprints-id">PUT /api/sprints/{sprintId}</a></li><li><a href="#put-tasks-id">PUT /api/tasks/{taskId}</a></li></ul>
+  </div>
+  <div class="toc-group">
+    <h3><span class="method method-patch">PATCH</span></h3>
+    <ul><li><a href="#patch-users-me">PATCH /api/users/me</a></li><li><a href="#patch-teams-id">PATCH /api/teams/{teamId}</a></li><li><a href="#patch-teams-member">PATCH /api/teams/{teamId}/members/{userId}</a></li><li><a href="#patch-tasks-subtasks">PATCH /api/tasks/{taskId}/subtasks/{subtaskId}</a></li><li><a href="#patch-tasks-comments">PATCH /api/tasks/{taskId}/comments/{commentId}</a></li></ul>
+  </div>
+  <div class="toc-group">
+    <h3><span class="method method-delete">DELETE</span></h3>
+    <ul><li><a href="#delete-users-me">DELETE /api/users/me</a></li><li><a href="#delete-teams-id">DELETE /api/teams/{teamId}</a></li><li><a href="#delete-teams-invitation">DELETE /api/teams/{teamId}/invitations/{invitationToken}</a></li><li><a href="#delete-projects-id">DELETE /api/projects/{projectId}</a></li><li><a href="#delete-sprints-id">DELETE /api/sprints/{sprintId}</a></li><li><a href="#delete-tasks-id">DELETE /api/tasks/{taskId}</a></li><li><a href="#delete-tasks-subtasks">DELETE /api/tasks/{taskId}/subtasks/{subtaskId}</a></li><li><a href="#delete-tasks-comments">DELETE /api/tasks/{taskId}/comments/{commentId}</a></li></ul>
+  </div>
+</nav>
+<main>
+<header class="doc-header">
+  <h1>Sprintify API Reference</h1>
+  <p>REST API for team-based project management with sprints, tasks, and AI assistance.</p>
+  <p style="margin-top:0.5rem">Base URL: <code>http://localhost:4000</code> &middot; Generated from source &middot; 2026-06-24</p>
+</header>
+
+<div class="info-box">
+  <h2>General Information</h2>
+  <ul>
+    <li><strong>Authentication:</strong> All routes except <code>GET /health</code> require <code>Authorization: Bearer &lt;firebase-id-token&gt;</code></li>
+    <li><strong>Content-Type:</strong> Send JSON bodies with <code>Content-Type: application/json</code></li>
+    <li><strong>Response envelope:</strong> <code>{ "status": "OK", "message": "...", "data": { ... } }</code></li>
+    <li><strong>Rate limits:</strong> Global 100 req/min per user/IP; AI routes 5 req/min</li>
+    <li><strong>Team roles:</strong> <code>manager</code> (write access) and <code>member</code> (read + comments)</li>
+    <li><strong>Pagination:</strong> Optional <code>page</code> and <code>limit</code> query params on list endpoints</li>
+    <li><strong>Object IDs:</strong> MongoDB ObjectId strings (24 hex characters) for resource path params</li>
+  </ul>
+</div>
+
+<h2 style="margin-bottom:1.5rem;font-size:1.4rem">Endpoints</h2>
+
+<section class="endpoint" id="get-health">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/health</code>
+    
+    <span class="module-tag">Health</span>
+  </div>
+  <p class="desc">Liveness and dependency check for MongoDB and Redis. Does not require authentication.</p>
+  <p><strong>Authentication:</strong> None (public)</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "ok" | "degraded",
+  "checks": {
+    "mongo": "ok" | "error",
+    "redis": "ok" | "error"
+  }
+}</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;ok&quot;,
+  &quot;checks&quot;: { &quot;mongo&quot;: &quot;ok&quot;, &quot;redis&quot;: &quot;ok&quot; }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>All dependencies healthy</td></tr>
+<tr><td>503</td><td>One or more dependencies failed</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/health</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-users-me">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/users/me</code>
+    
+    <span class="module-tag">Users</span>
+  </div>
+  <p class="desc">Returns the authenticated user's profile.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;OK&quot;, &quot;data&quot;: { &quot;user&quot;: { &quot;_id&quot;, &quot;uid&quot;, &quot;firstName&quot;, &quot;lastName&quot;, &quot;professionalTitle&quot;, &quot;gender&quot;, &quot;timezone&quot;, &quot;country&quot;, &quot;createdAt&quot;, &quot;updatedAt&quot; } } }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;OK&quot;,
+  &quot;message&quot;: &quot;OK&quot;,
+  &quot;data&quot;: {
+    &quot;user&quot;: {
+      &quot;_id&quot;: &quot;665a1b2c3d4e5f6789012345&quot;,
+      &quot;uid&quot;: &quot;firebase-uid-abc123&quot;,
+      &quot;firstName&quot;: &quot;Jane&quot;,
+      &quot;lastName&quot;: &quot;Doe&quot;,
+      &quot;professionalTitle&quot;: &quot;Product Manager&quot;,
+      &quot;gender&quot;: &quot;female&quot;,
+      &quot;timezone&quot;: &quot;America/New_York&quot;,
+      &quot;country&quot;: &quot;US&quot;,
+      &quot;createdAt&quot;: &quot;2025-01-15T10:00:00.000Z&quot;,
+      &quot;updatedAt&quot;: &quot;2025-06-01T08:30:00.000Z&quot;
+    }
+  }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/users/me \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  <h4>Example Error Response</h4><pre><code class="language-json">{
+  &quot;status&quot;: &quot;UNAUTHORIZED&quot;,
+  &quot;message&quot;: &quot;You are not authorized to access this resource&quot;
+}</code></pre>
+</section>
+
+<section class="endpoint" id="patch-users-me">
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <code class="path">/api/users/me</code>
+    
+    <span class="module-tag">Users</span>
+  </div>
+  <p class="desc">Updates the authenticated user's profile. Creates profile if it does not exist.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>firstName</td><td>string</td><td>Optional</td><td>1–50 characters</td></tr>
+<tr><td>lastName</td><td>string</td><td>Optional</td><td>1–50 characters</td></tr>
+<tr><td>professionalTitle</td><td>string</td><td>Optional</td><td>1–100 characters</td></tr>
+<tr><td>gender</td><td>string</td><td>Optional</td><td><code>male</code> | <code>female</code> | <code>prefer-not-to-say</code></td></tr>
+<tr><td>timezone</td><td>string</td><td>Optional</td><td>IANA timezone (e.g. America/New_York)</td></tr>
+<tr><td>country</td><td>string</td><td>Optional</td><td>ISO country code from supported list</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{
+  &quot;firstName&quot;: &quot;Jane&quot;,
+  &quot;lastName&quot;: &quot;Smith&quot;,
+  &quot;professionalTitle&quot;: &quot;Engineering Lead&quot;,
+  &quot;timezone&quot;: &quot;Europe/London&quot;
+}</code></pre>
+  <h4>Success Response</h4>
+  <p>Same as GET /api/users/me — returns updated <code>user</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PATCH http://localhost:4000/api/users/me \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;firstName&quot;:&quot;Jane&quot;,&quot;lastName&quot;:&quot;Smith&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-users-me">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/users/me</code>
+    
+    <span class="module-tag">Users</span>
+  </div>
+  <p class="desc">Permanently deletes the authenticated user's account, team memberships, and Firebase auth record.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Account deleted successfully" }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;Account deleted successfully&quot; }</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/users/me \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-users-id">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/users/{userId}</code>
+    
+    <span class="module-tag">Users</span>
+  </div>
+  <p class="desc">Returns a user's public profile. Caller must share a team with the target user (or request own profile).</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;OK&quot;, &quot;data&quot;: { &quot;user&quot;: { &quot;id&quot;, &quot;name&quot;, &quot;professionalTitle&quot; } } }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;OK&quot;,
+  &quot;message&quot;: &quot;OK&quot;,
+  &quot;data&quot;: {
+    &quot;user&quot;: {
+      &quot;id&quot;: &quot;firebase-uid-xyz789&quot;,
+      &quot;name&quot;: &quot;John Carter&quot;,
+      &quot;professionalTitle&quot;: &quot;Software Engineer&quot;
+    }
+  }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/users/firebase-uid-xyz789 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-teams">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/teams</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Creates a new team. Caller is assigned the manager role.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Team name (max 100 characters)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Acme Engineering&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;OK&quot;, &quot;data&quot;: { &quot;team&quot;: { &quot;_id&quot;, &quot;name&quot;, &quot;createdBy&quot;, &quot;createdAt&quot;, &quot;updatedAt&quot; } } }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;CREATED&quot;,
+  &quot;message&quot;: &quot;Created&quot;,
+  &quot;data&quot;: {
+    &quot;team&quot;: {
+      &quot;_id&quot;: &quot;665a1b2c3d4e5f6789012346&quot;,
+      &quot;name&quot;: &quot;Acme Engineering&quot;,
+      &quot;createdBy&quot;: &quot;firebase-uid-abc123&quot;,
+      &quot;createdAt&quot;: &quot;2025-06-24T12:00:00.000Z&quot;,
+      &quot;updatedAt&quot;: &quot;2025-06-24T12:00:00.000Z&quot;
+    }
+  }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/teams \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Acme Engineering&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-teams">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/teams</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Lists all teams the authenticated user belongs to.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><table class="param-table"><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>page</td><td>integer</td><td>Optional</td><td>Page number (default 1). Omit both page and limit for unpaginated list.</td><td>1</td></tr>
+<tr><td>limit</td><td>integer</td><td>Optional</td><td>Items per page (default 50, max 200).</td><td>20</td></tr></tbody></table>
+  
+  <h4>Success Response</h4>
+  <p>Unpaginated:</p><pre><code class="language-json">{ "status": "OK", "data": { "teams": [ ... ] } }</code></pre><p>When <code>page</code> or <code>limit</code> is provided:</p>
+<pre><code class="language-json">{
+  "status": "OK",
+  "message": "OK",
+  "data": {
+    "items": [ ... ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 42,
+      "totalPages": 3
+    }
+  }
+}</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;OK&quot;,
+  &quot;message&quot;: &quot;OK&quot;,
+  &quot;data&quot;: { &quot;teams&quot;: [{ &quot;_id&quot;: &quot;665a1b2c3d4e5f6789012346&quot;, &quot;name&quot;: &quot;Acme Engineering&quot; }] }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET &quot;http://localhost:4000/api/teams?page=1&amp;limit=20&quot; \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-teams-id">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/teams/{teamId}</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Returns team details and member roster. Caller must be a team member.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "OK",
+  "data": {
+    "team": { "_id", "name", "createdBy", "createdAt", "updatedAt" },
+    "members": [{
+      "userId": "string",
+      "role": "manager" | "member",
+      "joinedAt": "ISO8601",
+      "user": { "id", "name", "professionalTitle" } | null
+    }]
+  }
+}</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="patch-teams-id">
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <code class="path">/api/teams/{teamId}</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Updates team name. Caller must be a team member.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>New team name</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Acme Platform Team&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated <code>team</code> object.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PATCH http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Acme Platform Team&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-teams-id">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/teams/{teamId}</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Deletes a team and all associated data (cascade). Caller must be a team member.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Team deleted successfully" }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;Team deleted successfully&quot; }</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-teams-join">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/teams/{invitationCode}</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Join a team using an invitation code/token. Does not require email match.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><p class="muted">None</p>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "team": { ... }, "role": "member" } }</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{ &quot;status&quot;: &quot;OK&quot;, &quot;message&quot;: &quot;OK&quot;, &quot;data&quot;: { &quot;team&quot;: { &quot;_id&quot;: &quot;665a1b2c3d4e5f6789012346&quot;, &quot;name&quot;: &quot;Acme Engineering&quot; }, &quot;role&quot;: &quot;member&quot; } }</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/teams/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-teams-accept">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/teams/{invitationToken}/accept</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Accept a team invitation. Requires authenticated user's email to match the invitation email.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><p class="muted">None</p>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "team": { ... }, "role": "member" } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/teams/a1b2c3d4-e5f6-7890-abcd-ef1234567890/accept \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-teams-projects">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/teams/{teamId}/projects</code>
+    
+    <span class="module-tag">Teams / Projects</span>
+  </div>
+  <p class="desc">Lists projects belonging to a team.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><table class="param-table"><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>page</td><td>integer</td><td>Optional</td><td>Page number (default 1). Omit both page and limit for unpaginated list.</td><td>1</td></tr>
+<tr><td>limit</td><td>integer</td><td>Optional</td><td>Items per page (default 50, max 200).</td><td>20</td></tr></tbody></table>
+  
+  <h4>Success Response</h4>
+  <p>Unpaginated: <code>{ "projects": [...] }</code>. Paginated: <code>{ "items", "pagination" }</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET &quot;http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/projects&quot; \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-teams-projects">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/teams/{teamId}/projects</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Teams / Projects</span>
+  </div>
+  <p class="desc">Creates a new project within a team.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Project name (max 100 chars)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Sprintify Mobile App&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "CREATED", "data": { "project": { "_id", "name", "teamId", "createdBy", "createdAt", "updatedAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/projects \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Sprintify Mobile App&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-teams-invitations">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/teams/{teamId}/invitations</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Creates an email invitation to join the team. Token expires after 7 days.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>email</td><td>string</td><td>Required</td><td>Invitee email address</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;email&quot;: &quot;newmember@example.com&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "CREATED", "data": { "invitation": { "_id", "teamId", "email", "token", "invitedBy", "expiresAt", "createdAt", "updatedAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/invitations \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;email&quot;:&quot;newmember@example.com&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-teams-invitations">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/teams/{teamId}/invitations</code>
+    
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Lists pending invitations for a team.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "invitations": [ ... ] } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/invitations \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-teams-invitation">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/teams/{teamId}/invitations/{invitationToken}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Revokes a pending team invitation.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Invitation deleted successfully" }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/invitations/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="patch-teams-member">
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <code class="path">/api/teams/{teamId}/members/{userId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Teams</span>
+  </div>
+  <p class="desc">Updates a team member's role.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>role</td><td>string</td><td>Required</td><td><code>manager</code> | <code>member</code></td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;role&quot;: &quot;manager&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "member": { "_id", "teamId", "userId", "role", "joinedAt", "createdAt", "updatedAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PATCH http://localhost:4000/api/teams/665a1b2c3d4e5f6789012346/members/firebase-uid-xyz789 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;role&quot;:&quot;manager&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-projects-id">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/projects/{projectId}</code>
+    
+    <span class="module-tag">Projects</span>
+  </div>
+  <p class="desc">Returns project details. Caller must be a member of the project's team.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "project": { "_id", "name", "teamId", "createdBy", "createdAt", "updatedAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="put-projects-id">
+  <div class="endpoint-header">
+    <span class="method method-put">PUT</span>
+    <code class="path">/api/projects/{projectId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Projects</span>
+  </div>
+  <p class="desc">Updates project name.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>New project name</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Sprintify Web&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated <code>project</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PUT http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Sprintify Web&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-projects-id">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/projects/{projectId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Projects</span>
+  </div>
+  <p class="desc">Deletes a project and associated resources.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Project deleted successfully" }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-projects-tasks">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/projects/{projectId}/tasks</code>
+    
+    <span class="module-tag">Projects / Tasks</span>
+  </div>
+  <p class="desc">Lists all tasks in a project.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><table class="param-table"><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>page</td><td>integer</td><td>Optional</td><td>Page number (default 1). Omit both page and limit for unpaginated list.</td><td>1</td></tr>
+<tr><td>limit</td><td>integer</td><td>Optional</td><td>Items per page (default 50, max 200).</td><td>20</td></tr></tbody></table>
+  
+  <h4>Success Response</h4>
+  <p>Unpaginated: <code>{ "tasks": [...] }</code>. Paginated: <code>{ "items", "pagination" }</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET &quot;http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347/tasks?page=1&amp;limit=50&quot; \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-projects-tasks">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/projects/{projectId}/tasks</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Projects / Tasks</span>
+  </div>
+  <p class="desc">Creates a new task in a project.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Task title (1–200 chars)</td></tr>
+<tr><td>description</td><td>string</td><td>Optional</td><td>Max 2500 characters</td></tr>
+<tr><td>priority</td><td>string</td><td>Optional</td><td>Urgent | High | Medium | Low (default Medium)</td></tr>
+<tr><td>status</td><td>string</td><td>Optional</td><td>Backlog | To Do | In Progress | Review | Done (default Backlog)</td></tr>
+<tr><td>category</td><td>string</td><td>Optional</td><td>Max 100 characters</td></tr>
+<tr><td>assignees</td><td>string[]</td><td>Optional</td><td>Firebase UIDs (max 50)</td></tr>
+<tr><td>sprintId</td><td>string</td><td>Optional</td><td>MongoDB ObjectId of sprint</td></tr>
+<tr><td>subtasks</td><td>object[]</td><td>Optional</td><td>{ "name": string, "completed"?: boolean } (max 100)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{
+  &quot;name&quot;: &quot;Implement login screen&quot;,
+  &quot;description&quot;: &quot;Firebase auth integration&quot;,
+  &quot;priority&quot;: &quot;High&quot;,
+  &quot;status&quot;: &quot;To Do&quot;,
+  &quot;assignees&quot;: [&quot;firebase-uid-xyz789&quot;]
+}</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "CREATED", "data": { "task": { ... } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347/tasks \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Implement login screen&quot;,&quot;priority&quot;:&quot;High&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-projects-sprints">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/projects/{projectId}/sprints</code>
+    
+    <span class="module-tag">Projects / Sprints</span>
+  </div>
+  <p class="desc">Lists sprints for a project.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><table class="param-table"><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td>page</td><td>integer</td><td>Optional</td><td>Page number (default 1). Omit both page and limit for unpaginated list.</td><td>1</td></tr>
+<tr><td>limit</td><td>integer</td><td>Optional</td><td>Items per page (default 50, max 200).</td><td>20</td></tr></tbody></table>
+  
+  <h4>Success Response</h4>
+  <p>Unpaginated or paginated sprint list.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347/sprints \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-projects-sprints">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/projects/{projectId}/sprints</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Projects / Sprints</span>
+  </div>
+  <p class="desc">Creates a new sprint in a project.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Sprint name (max 100 chars)</td></tr>
+<tr><td>goal</td><td>string</td><td>Optional</td><td>Sprint goal (max 500 chars)</td></tr>
+<tr><td>startDate</td><td>string (ISO8601)</td><td>Optional</td><td>Defaults to now</td></tr>
+<tr><td>endDate</td><td>string (ISO8601)</td><td>Optional</td><td>Sprint end date</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Sprint 1&quot;, &quot;goal&quot;: &quot;MVP launch&quot;, &quot;endDate&quot;: &quot;2025-07-08T00:00:00.000Z&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "CREATED", "data": { "sprint": { "_id", "projectId", "teamId", "name", "goal", "status", "startDate", "endDate", "completedAt", "createdAt", "updatedAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/projects/665a1b2c3d4e5f6789012347/sprints \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Sprint 1&quot;,&quot;goal&quot;:&quot;MVP launch&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-sprints-id">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/sprints/{sprintId}</code>
+    
+    <span class="module-tag">Sprints</span>
+  </div>
+  <p class="desc">Returns sprint details.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "sprint": { ... } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/sprints/665a1b2c3d4e5f6789012348 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="put-sprints-id">
+  <div class="endpoint-header">
+    <span class="method method-put">PUT</span>
+    <code class="path">/api/sprints/{sprintId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Sprints</span>
+  </div>
+  <p class="desc">Updates sprint fields (name, goal, startDate, endDate). Status and completedAt are server-managed.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Optional</td><td>Sprint name</td></tr>
+<tr><td>goal</td><td>string</td><td>Optional</td><td>Sprint goal</td></tr>
+<tr><td>startDate</td><td>string</td><td>Optional</td><td>ISO8601 date</td></tr>
+<tr><td>endDate</td><td>string</td><td>Optional</td><td>ISO8601 date</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;goal&quot;: &quot;Complete auth module&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated <code>sprint</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PUT http://localhost:4000/api/sprints/665a1b2c3d4e5f6789012348 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;goal&quot;:&quot;Complete auth module&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-sprints-id">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/sprints/{sprintId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Sprints</span>
+  </div>
+  <p class="desc">Deletes a sprint and unassigns it from tasks.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Sprint deleted successfully" }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/sprints/665a1b2c3d4e5f6789012348 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-sprints-complete">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/sprints/{sprintId}/complete</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Sprints</span>
+  </div>
+  <p class="desc">Marks a sprint as completed. Sets status to completed and completedAt timestamp.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><p class="muted">None</p>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "data": { "sprint": { "status": "completed", "completedAt": "..." } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/sprints/665a1b2c3d4e5f6789012348/complete \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="get-tasks-id">
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <code class="path">/api/tasks/{taskId}</code>
+    
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Returns a task with its comments. Caller must be a team member.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "OK",
+  "data": {
+    "task": { "_id", "name", "description", "priority", "status", "category", "subtasks", "assignees", "projectId", "teamId", "sprintId", "createdBy", "createdAt", "updatedAt" },
+    "comments": [{ "_id", "taskId", "author", "content", "createdAt" }]
+  }
+}</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X GET http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="put-tasks-id">
+  <div class="endpoint-header">
+    <span class="method method-put">PUT</span>
+    <code class="path">/api/tasks/{taskId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Updates a task. Protected fields (projectId, teamId, createdBy) cannot be changed.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Task title (1–200 chars)</td></tr>
+<tr><td>description</td><td>string</td><td>Optional</td><td>Max 2500 characters</td></tr>
+<tr><td>priority</td><td>string</td><td>Optional</td><td>Urgent | High | Medium | Low (default Medium)</td></tr>
+<tr><td>status</td><td>string</td><td>Optional</td><td>Backlog | To Do | In Progress | Review | Done (default Backlog)</td></tr>
+<tr><td>category</td><td>string</td><td>Optional</td><td>Max 100 characters</td></tr>
+<tr><td>assignees</td><td>string[]</td><td>Optional</td><td>Firebase UIDs (max 50)</td></tr>
+<tr><td>sprintId</td><td>string</td><td>Optional</td><td>MongoDB ObjectId of sprint</td></tr>
+<tr><td>subtasks</td><td>object[]</td><td>Optional</td><td>{ "name": string, "completed"?: boolean } (max 100)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;status&quot;: &quot;In Progress&quot;, &quot;priority&quot;: &quot;Urgent&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated <code>task</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PUT http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;status&quot;:&quot;In Progress&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-tasks-id">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/tasks/{taskId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Deletes a task and all its comments.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Task deleted successfully" }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-tasks-subtasks">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/tasks/{taskId}/subtasks</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Adds a subtask to a task.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Required</td><td>Subtask title (1–200 chars)</td></tr>
+<tr><td>completed</td><td>boolean</td><td>Optional</td><td>Default false</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;name&quot;: &quot;Write unit tests&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated parent <code>task</code> with subtasks array.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/subtasks \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;name&quot;:&quot;Write unit tests&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="patch-tasks-subtasks">
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <code class="path">/api/tasks/{taskId}/subtasks/{subtaskId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Updates a subtask's name or completed status.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>name</td><td>string</td><td>Optional</td><td>New subtask title</td></tr>
+<tr><td>completed</td><td>boolean</td><td>Optional</td><td>Completion status</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;completed&quot;: true }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated parent <code>task</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PATCH http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/subtasks/665a1b2c3d4e5f6789012350 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;completed&quot;:true}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-tasks-subtasks">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/tasks/{taskId}/subtasks/{subtaskId}</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Removes a subtask from a task.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <p>Returns updated parent <code>task</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/subtasks/665a1b2c3d4e5f6789012350 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-tasks-comments">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/tasks/{taskId}/comments</code>
+    
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Adds a comment to a task. Any team member can comment.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>content</td><td>string</td><td>Required</td><td>Comment text (max 5000 chars)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;content&quot;: &quot;Blocked on API design review.&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "CREATED", "data": { "comment": { "_id", "taskId", "author", "content", "createdAt" } } }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/comments \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;content&quot;:&quot;Blocked on API design review.&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="patch-tasks-comments">
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <code class="path">/api/tasks/{taskId}/comments/{commentId}</code>
+    
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Edits a comment. Only the original author can edit.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>content</td><td>string</td><td>Required</td><td>Updated comment text</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;content&quot;: &quot;Unblocked — proceeding.&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <p>Returns updated <code>comment</code>.</p>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X PATCH http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/comments/665a1b2c3d4e5f6789012351 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;content&quot;:&quot;Unblocked — proceeding.&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="delete-tasks-comments">
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <code class="path">/api/tasks/{taskId}/comments/{commentId}</code>
+    
+    <span class="module-tag">Tasks</span>
+  </div>
+  <p class="desc">Deletes a comment. Only the original author can delete.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{ "status": "OK", "message": "Comment deleted successfully" }</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK — request succeeded</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X DELETE http://localhost:4000/api/tasks/665a1b2c3d4e5f6789012349/comments/665a1b2c3d4e5f6789012351 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-ai-chat">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/ai/{projectId}/chat</code>
+    
+    <span class="module-tag">AI</span>
+  </div>
+  <p class="desc">Sends a message to the project AI assistant. Maintains session history in Redis (TTL 7200s default). Rate limit: 5 req/min.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>message</td><td>string</td><td>Required</td><td>User message (1–4000 characters)</td></tr>
+<tr><td>sessionId</td><td>string</td><td>Optional</td><td>Chat session UUID; auto-generated if omitted</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;message&quot;: &quot;What tasks are overdue?&quot;, &quot;sessionId&quot;: &quot;session-uuid-here&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "OK",
+  "data": {
+    "sessionId": "uuid",
+    "response": { "role": "assistant", "content": "..." }
+  }
+}</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;OK&quot;,
+  &quot;message&quot;: &quot;OK&quot;,
+  &quot;data&quot;: {
+    &quot;sessionId&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;response&quot;: { &quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;You have 3 tasks in Review status.&quot; }
+  }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK</td></tr>
+<tr><td>400</td><td>Message must be 1–4000 characters</td></tr>
+<tr><td>401</td><td>Unauthorized</td></tr>
+<tr><td>404</td><td>Project not found</td></tr>
+<tr><td>429</td><td>AI rate limit exceeded (5/min)</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/ai/665a1b2c3d4e5f6789012347/chat \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;message&quot;:&quot;What tasks are overdue?&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-ai-tasks">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/ai/{projectId}/tasks</code>
+    <span class="role-badge">manager</span>
+    <span class="module-tag">AI</span>
+  </div>
+  <p class="desc">Generates task suggestions from a natural-language prompt using AI. Rate limit: 5 req/min.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><table class="param-table"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>message</td><td>string</td><td>Required</td><td>Generation prompt (1–4000 characters)</td></tr></tbody></table><h5>Example</h5><pre><code class="language-json">{ &quot;message&quot;: &quot;Create tasks for a user onboarding flow&quot; }</code></pre>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "OK",
+  "data": {
+    "tasks": [{
+      "name": "string",
+      "description": "string",
+      "priority": "Urgent" | "High" | "Medium" | "Low",
+      "status": "Backlog" | "To Do" | "In Progress" | "Review" | "Done",
+      "subtasks": [{ "name": "string", "completed": false }]
+    }]
+  }
+}</code></pre>
+  
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>200</td><td>OK</td></tr>
+<tr><td>400</td><td>Invalid message</td></tr>
+<tr><td>401</td><td>Unauthorized</td></tr>
+<tr><td>403</td><td>Manager role required</td></tr>
+<tr><td>429</td><td>AI rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/ai/665a1b2c3d4e5f6789012347/tasks \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;message&quot;:&quot;Create tasks for a user onboarding flow&quot;}'</code></pre>
+  
+</section>
+
+<section class="endpoint" id="post-ai-chat-history">
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <code class="path">/api/ai/{projectId}/chat-history/{sessionId}</code>
+    
+    <span class="module-tag">AI</span>
+  </div>
+  <p class="desc">Retrieves chat history for a session from Redis. Returns empty array if session not found.</p>
+  <p><strong>Authentication:</strong> Required — Firebase Bearer token</p>
+  <h4>Query Parameters</h4><p class="muted">None</p>
+  <h4>Request Body</h4><p class="muted">None</p>
+  <h4>Success Response</h4>
+  <pre><code class="language-json">{
+  "status": "OK",
+  "data": {
+    "chatHistory": [
+      { "role": "system" | "user" | "assistant", "content": "..." }
+    ]
+  }
+}</code></pre>
+  <h5>Example</h5><pre><code class="language-json">{
+  &quot;status&quot;: &quot;OK&quot;,
+  &quot;message&quot;: &quot;OK&quot;,
+  &quot;data&quot;: {
+    &quot;chatHistory&quot;: [
+      { &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;What tasks are overdue?&quot; },
+      { &quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;You have 3 tasks in Review status.&quot; }
+    ]
+  }
+}</code></pre>
+  <h4>Status Codes</h4>
+  <table class="param-table"><thead><tr><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>201</td><td>Created — resource successfully created</td></tr>
+<tr><td>401</td><td>Missing, invalid, or expired Bearer token</td></tr>
+<tr><td>400</td><td>Bad request — invalid parameters or body</td></tr>
+<tr><td>404</td><td>Resource not found or access denied</td></tr>
+<tr><td>403</td><td>Forbidden — insufficient team role (manager required)</td></tr>
+<tr><td>429</td><td>Rate limit exceeded</td></tr>
+<tr><td>500</td><td>Internal server error</td></tr></tbody></table>
+  <h4>Example Request</h4>
+  <pre><code class="language-bash">curl -X POST http://localhost:4000/api/ai/665a1b2c3d4e5f6789012347/chat-history/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H &quot;Authorization: Bearer &lt;firebase-id-token&gt;&quot;</code></pre>
+  
+</section>
+
+<footer>
+  Sprintify TypeScript API &mdash; 41 endpoints documented
+</footer>
+</main>
+</div>
+</body>
+</html>
