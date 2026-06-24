@@ -2,21 +2,10 @@ import { Task } from "../models/task";
 import { TaskComment } from "../models/task-comment";
 import type { ProjectDocument } from "../models/project";
 import { TeamMembership } from "../models/team-memberships";
-import { TASK_AUTH_FIELDS } from "../lib/query-projections";
+import { assertTaskMember } from "../lib/task-access";
 
 type Subtask = { name: string; completed?: boolean };
 type Comment = { content: string };
-
-async function assertTaskMember(taskId: string, userId: string) {
-  // Project only teamId for authorization; full task is loaded when the handler needs it.
-  const task = await Task.findById(taskId).select(TASK_AUTH_FIELDS);
-  if(!task) throw new Error("Task not found");
-
-  const isMember = await TeamMembership.exists({ teamId: task.teamId, userId });
-  if(!isMember) throw new Error("Task not found");
-
-  return task;
-}
 
 // Task retrieval services
 export const getTasksByProjectIdService = async (projectId: string) => {

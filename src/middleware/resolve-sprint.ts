@@ -1,10 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { handleResponse } from "../lib/response-handler";
-import { MEMBERSHIP_ROLE_FIELDS } from "../lib/query-projections";
+import { findCallerMembership } from "../lib/team-access";
 import { Project } from "../models/project";
 import { Sprint } from "../models/sprint";
-import { TeamMembership } from "../models/team-memberships";
 
 export const resolveSprint = async (req: Request, res: Response, next: NextFunction) => {
   const { sprintId } = req.params as { sprintId: string };
@@ -14,7 +13,7 @@ export const resolveSprint = async (req: Request, res: Response, next: NextFunct
   if(!sprint) return handleResponse(res, 404, undefined, "Sprint not found");
 
   const [membership, project] = await Promise.all([
-    TeamMembership.findOne({ teamId: sprint.teamId, userId: req.user!.id }).select(MEMBERSHIP_ROLE_FIELDS),
+    findCallerMembership(sprint.teamId, req.user!.id),
     Project.findById(sprint.projectId),
   ]);
   if(!membership) return handleResponse(res, 404, undefined, "Sprint not found");

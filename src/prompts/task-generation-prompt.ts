@@ -1,9 +1,6 @@
 import { PRIORITIES, STATUSES } from "../models/task";
-import { AuthUser } from "../types/user";
-import { ProjectDetails } from "./chat-assistant-prompt";
-import { PromptTeamMember } from "./chat-assistant-prompt";
+import type { ProjectDetails, PromptTeamMember } from "../types/project-context";
 
-// TODO: give people titles context
 export const taskGenerationPrompt = (
     project: ProjectDetails,
     teamMembers: PromptTeamMember[],
@@ -27,7 +24,7 @@ export const taskGenerationPrompt = (
     <ProjectContext>
     PROJECT NAME: ${project.name}
 
-    TEAM MEMBERS: ${teamMembers.map((member) => `${member.name} (${member.role})`).join(", ")}
+    TEAM MEMBERS: ${teamMembers.map((member) => `${member.name} (${member.role}${member.professionalTitle ? ` - ${member.professionalTitle}` : ""})`).join(", ")}
 
     PRIORITIES: ${PRIORITIES.join(", ")}
     STATUSES: ${STATUSES.join(", ")}

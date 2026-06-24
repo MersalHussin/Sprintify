@@ -1,21 +1,5 @@
-import { SprintDocument } from "../models/sprint";
-import { TaskDocument } from "../models/task";
-import { TeamDocument } from "../models/team";
 import type { AuthUser } from "../types/user";
-import { TeamRole } from "../types/team";
-
-export type PromptTeamMember = {
-    id: string;
-    name: string;
-    role: TeamRole;
-};
-
-export type ProjectDetails = {
-    name: string;
-    team: TeamDocument;
-    tasks: TaskDocument[];
-    sprints: SprintDocument[];
-};
+import type { ProjectDetails, PromptTeamMember } from "../types/project-context";
 
 function displayName(usersById: Map<string, AuthUser>, uid: string): string {
     const user = usersById.get(uid);

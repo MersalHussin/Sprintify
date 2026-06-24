@@ -1,4 +1,4 @@
-import type { PromptTeamMember } from "../prompts/chat-assistant-prompt";
+import type { PromptTeamMember } from "../types/project-context";
 import type { TeamMember } from "../types/team";
 import type { TeamMembershipDocument } from "../models/team-memberships";
 import { toAuthUser, type UserDisplayDocument } from "./users";
@@ -25,5 +25,6 @@ export function toPromptTeamMembers(teamMembers: TeamMember[]): PromptTeamMember
     id: member.userId,
     name: member.user?.name ?? member.userId,
     role: member.role,
+    professionalTitle: member.user?.professionalTitle,
   }));
 }

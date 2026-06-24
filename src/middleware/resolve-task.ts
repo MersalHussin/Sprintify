@@ -1,10 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { handleResponse } from "../lib/response-handler";
-import { MEMBERSHIP_ROLE_FIELDS } from "../lib/query-projections";
+import { findCallerMembership } from "../lib/team-access";
 import { Project } from "../models/project";
 import { Task } from "../models/task";
-import { TeamMembership } from "../models/team-memberships";
 
 export const resolveTask = async (req: Request, res: Response, next: NextFunction) => {
   const { taskId } = req.params as { taskId: string };
@@ -15,7 +14,7 @@ export const resolveTask = async (req: Request, res: Response, next: NextFunctio
 
   // Membership and project lookups are independent once task refs are loaded.
   const [membership, project] = await Promise.all([
-    TeamMembership.findOne({ teamId: task.teamId, userId: req.user!.id }).select(MEMBERSHIP_ROLE_FIELDS),
+    findCallerMembership(task.teamId, req.user!.id),
     Project.findById(task.projectId),
   ]);
   if(!membership) return handleResponse(res, 404, undefined, "Task not found");
