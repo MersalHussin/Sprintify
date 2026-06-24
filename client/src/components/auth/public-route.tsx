@@ -14,7 +14,7 @@ export function PublicRoute() {
   }
 
   if (user) {
-    return <Navigate to="/ai" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;

@@ -14,22 +14,30 @@ export default function TemplateCards() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/templates');
-        if (!response.ok) throw new Error('Failed to fetch templates');
-        
-        // Assert the returned JSON matches our Template[] structure
-        const data = await response.json() as Template[];
-        setTemplates(data);
-      } catch (error) {
-        console.error("Error loading templates:", error);
-      } finally {
-        setIsLoading(false);
+    // Hardcoded templates since there is no backend endpoint for this
+    const staticTemplates: Template[] = [
+      {
+        id: "1",
+        title: "Sprint Planning",
+        description: "Generate a comprehensive sprint plan with tasks and estimates based on your goals.",
+      },
+      {
+        id: "2",
+        title: "Security Audit",
+        description: "Analyze your project's architecture for potential security vulnerabilities and risks.",
+      },
+      {
+        id: "3",
+        title: "Architecture Design",
+        description: "Design a scalable and robust system architecture for your new feature or product.",
       }
-    };
+    ];
 
-    fetchTemplates();
+    // Simulate a brief network delay
+    setTimeout(() => {
+      setTemplates(staticTemplates);
+      setIsLoading(false);
+    }, 500);
   }, []);
 
   

@@ -10,16 +10,19 @@ import {
   FaPlus,
   FaDiagramProject,
   FaTable,
-  FaArrowRightFromBracket
+  FaArrowRightFromBracket,
+  FaWandMagicSparkles,
+  FaLayerGroup,
+  FaSliders
 } from 'react-icons/fa6';
 import { useContactModal } from '@/context/contact-modal-context';
 import { useAuth } from '@/context/auth-context';
 import { useNavigate } from 'react-router';
 
 const SIDEBAR_LINKS = [
-  { title: 'Build with AI', path: '/ai', icon: FaDiagramProject },
-  { title: 'Workspaces', path: '/workspaces', icon: FaPersonRunning },
-  { title: 'Settings', path: '/settings', icon: FaGear },
+  { title: 'Build with AI', path: '/dashboard', icon: FaWandMagicSparkles },
+  { title: 'Workspaces', path: '/workspaces', icon: FaLayerGroup },
+  { title: 'Settings', path: '/settings', icon: FaSliders },
 ];
 
 export default function Sidebar() {
@@ -76,10 +79,10 @@ export default function Sidebar() {
             <span>Support</span>
           </button>
 
-          <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 mt-4 rounded-3xl transition-colors font-medium">
+          {/* <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 mt-4 rounded-3xl transition-colors font-medium">
             <FaPlus />
             New Project
-          </button>
+          </button> */}
 
         </div>
       </div>

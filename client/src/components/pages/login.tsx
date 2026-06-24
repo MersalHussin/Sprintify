@@ -34,7 +34,7 @@ const Login = () => {
       setAuthError(null);
       setLoading(true);
       await signInWithEmail(data.email, data.password);
-      navigate("/ai");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error(error);
       setAuthError(error.message || "An error occurred during sign-in.");

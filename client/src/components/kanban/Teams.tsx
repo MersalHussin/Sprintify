@@ -41,7 +41,19 @@ export default function Teams({ teamId }: { teamId?: string | null }) {
 
     try {
       const teamRes = await apiFetch(`/teams/${teamId}`);
-      if (teamRes?.members) setMembers(teamRes.members);
+      if (teamRes?.members) {
+        // If the team has no members or only 1 member (the creator), we can inject some dummy data
+        if (teamRes.members.length <= 1) {
+          setMembers([
+            ...teamRes.members,
+            { userId: 'dummy1', role: 'developer', joinedAt: new Date().toISOString(), user: { id: 'dummy1', name: 'Omar Hassan', professionalTitle: 'Frontend Engineer' } },
+            { userId: 'dummy2', role: 'designer', joinedAt: new Date().toISOString(), user: { id: 'dummy2', name: 'Laila Mahmoud', professionalTitle: 'UX Designer' } },
+            { userId: 'dummy3', role: 'manager', joinedAt: new Date().toISOString(), user: { id: 'dummy3', name: 'Karim Ali', professionalTitle: 'Product Owner' } },
+          ]);
+        } else {
+          setMembers(teamRes.members);
+        }
+      }
 
       const invitesRes = await apiFetch(`/teams/${teamId}/invitations`);
       if (invitesRes?.invitations) setInvites(invitesRes.invitations);
@@ -63,6 +75,8 @@ export default function Teams({ teamId }: { teamId?: string | null }) {
       timer: 1500,
       showConfirmButton: false
     });
+  };
+
   const handleAddMember = async () => {
     if (!teamId || boardId === 'dummy-workspace-1') return;
 
@@ -205,5 +219,4 @@ export default function Teams({ teamId }: { teamId?: string | null }) {
       </div>
     </div>
   );
-}
 }

@@ -58,7 +58,7 @@ function App() {
                   <Route element={<Layout />}>
                     <Route path="/workspaces" element={<Workspaces />} />
                     <Route path="/kanban" element={<Kanban />} />
-                    <Route path="/ai" element={<AI />} />
+                    <Route path="/dashboard" element={<AI />} />
                     <Route path="/boards" element={<Boards />} />
                     <Route path="/settings" element={<Settings />} />
                   </Route>
