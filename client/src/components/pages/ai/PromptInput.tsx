@@ -22,24 +22,9 @@ export default function PromptInput() {
     setIsGenerating(true);
 
     try {
-     
-      const newGeneration: GenerationPayload = {
-        title: promptText, 
-        meta: "Generating... • 0 tasks created",
-        status: "In Progress"
-      };
-
-      const response = await fetch('http://localhost:5000/generations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newGeneration),
-      });
-
-      if (response.ok) {
-        setPromptText('');
-      }
+      // Simulate generation for now since the real backend requires a projectId
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setPromptText('');
     } catch (error) {
       
       console.error("Error creating generation:", error);

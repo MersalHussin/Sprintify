@@ -9,9 +9,12 @@ import {
   FaHeadset, 
   FaPlus,
   FaDiagramProject,
-  FaTable
+  FaTable,
+  FaArrowRightFromBracket
 } from 'react-icons/fa6';
 import { useContactModal } from '@/context/contact-modal-context';
+import { useAuth } from '@/context/auth-context';
+import { useNavigate } from 'react-router';
 
 const SIDEBAR_LINKS = [
   { title: 'Build with AI', path: '/ai', icon: FaDiagramProject },
@@ -21,6 +24,17 @@ const SIDEBAR_LINKS = [
 
 export default function Sidebar() {
   const { open: openContact } = useContactModal();
+  const { user, logOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate('/login');
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
 
   return (
     <aside className="w-64 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col flex-shrink-0 hidden md:flex transition-colors duration-200">
@@ -72,20 +86,27 @@ export default function Sidebar() {
 
       {/* User Profile Footer */}
       <div className="border-t border-gray-200 dark:border-slate-800 p-4">
-        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-            alt="User Avatar" 
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 object-cover" 
-          />
-          <div className="flex flex-col overflow-hidden">
-            <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-              John Doe
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              Product Manager
-            </span>
+        <div 
+          onClick={handleLogout}
+          className="flex items-center justify-between p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors cursor-pointer group"
+          title="Click to logout"
+        >
+          <div className="flex items-center gap-3 overflow-hidden">
+            <img 
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.displayName || 'User'}`} 
+              alt="User Avatar" 
+              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 object-cover" 
+            />
+            <div className="flex flex-col overflow-hidden">
+              <span className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-red-600 truncate">
+                {user?.displayName || user?.email?.split('@')[0] || 'User'}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-red-400 truncate">
+                Logout
+              </span>
+            </div>
           </div>
+          <FaArrowRightFromBracket className="text-gray-400 group-hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
       

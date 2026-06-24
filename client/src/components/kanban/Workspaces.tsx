@@ -2,24 +2,52 @@ import React, { useState, useEffect, type MouseEvent } from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router';
+import { apiFetch } from '../../lib/api';
 
 // 1. تعريف شكل البورد اللي راجعة من السيرفر
-interface BoardType {
-  id: string | number;
-  title: string;
+interface ProjectType {
+  _id: string;
+  name: string;
 }
 
 export default function Workspaces() {
   const navigate = useNavigate();
-  // 3. بنعرف الـ State إنها عبارة عن Array من نوع BoardType
-  const [boards, setBoards] = useState<BoardType[]>([]);
+  const [projects, setProjects] = useState<ProjectType[]>([]);
+  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // جلب كل اللوحات من السيرفر عند فتح الصفحة
+  // جلب اللوحات من السيرفر
   useEffect(() => {
-    fetch('http://localhost:4000/boards')
-      .then(res => res.json())
-      .then((data: BoardType[]) => setBoards(data))
-      .catch(err => console.error("Error loading boards:", err));
+    async function loadData() {
+      try {
+        setLoading(true);
+        // 1. Get teams
+        let teamsRes = await apiFetch('/teams');
+        let teams = teamsRes?.teams || [];
+
+        // 2. If no teams, create a default one
+        if (teams.length === 0) {
+          const newTeamRes = await apiFetch('/teams', {
+            method: 'POST',
+            body: JSON.stringify({ name: 'My Workspace' })
+          });
+          teams = [newTeamRes.team];
+        }
+
+        const teamId = teams[0]._id;
+        setCurrentTeamId(teamId);
+
+        // 3. Get projects for the team
+        const projectsRes = await apiFetch(`/teams/${teamId}/projects`);
+        setProjects(projectsRes?.projects || projectsRes?.items || []);
+      } catch (error) {
+        console.error("Error loading workspace data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
   }, []);
 
   // دالة إضافة بورد جديدة
@@ -34,40 +62,18 @@ export default function Workspaces() {
       cancelButtonText: 'Cancel'
     });
 
-    if (!boardTitle || !boardTitle.trim()) return;
+    if (!boardTitle || !boardTitle.trim() || !currentTeamId) return;
 
     try {
-      // 1. إنشاء البورد
-      const res = await fetch('http://localhost:4000/boards', {
+      const res = await apiFetch(`/teams/${currentTeamId}/projects`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: boardTitle.trim() })
+        body: JSON.stringify({ name: boardTitle.trim() })
       });
-      const newBoard: BoardType = await res.json();
       
-      // 2. إنشاء الأعمدة الافتراضية
-      const defaultColumns = [
-        { title: "To Do", color: "bg-blue-500/15 text-blue-700", iconName: "AlertCircle" },
-        { title: "In Progress", color: "bg-amber-500/15 text-amber-700", iconName: "Clock" },
-        { title: "Done", color: "bg-emerald-500/15 text-emerald-700", iconName: "CheckCircle2" }
-      ];
-
-      for (const col of defaultColumns) {
-        await fetch('http://localhost:4000/columns', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            boardId: newBoard.id, 
-            title: col.title,
-            color: col.color,
-            iconName: col.iconName
-          })
-        });
-      }
-
-      setBoards([...boards, newBoard]); 
+      const newProject = res.project;
+      setProjects([...projects, newProject]); 
     } catch (error) {
-      console.error("Error creating board:", error);
+      console.error("Error creating project:", error);
     }
   };
 
@@ -89,16 +95,20 @@ export default function Workspaces() {
 
     if (result.isConfirmed) {
       try {
-        await fetch(`http://localhost:4000/boards/${boardId}`, {
+        await apiFetch(`/projects/${boardId}`, {
           method: 'DELETE'
         });
-        setBoards(boards.filter(board => board.id !== boardId));
+        setProjects(projects.filter(p => p._id !== boardId));
         Swal.fire('Deleted!', 'Your workspace has been deleted.', 'success');
       } catch (error) {
-        console.error("Error deleting board:", error);
+        console.error("Error deleting project:", error);
       }
     }
   };
+
+  if (loading) {
+    return <div className="p-12 text-gray-500">Loading workspaces...</div>;
+  }
 
   return (
     <div className="flex-1 flex flex-col p-8 md:p-12 overflow-y-auto">
@@ -131,21 +141,21 @@ export default function Workspaces() {
             <span className="text-xs font-normal text-indigo-200 group-hover:text-white transition-colors">Open Board →</span>
           </div>
 
-          {boards.map(board => (
+          {projects.map(project => (
             <div 
-              key={board.id}
-              onClick={() => navigate(`/board/${board.id}`)}
+              key={project._id}
+              onClick={() => navigate(`/board/${project._id}`)}
               className="h-36 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-850 text-white p-5 rounded-2xl font-bold text-xl cursor-pointer shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 flex flex-col justify-between group relative"
             >
               <button
-                onClick={(e) => handleDeleteBoard(e, board.id)}
+                onClick={(e) => handleDeleteBoard(e, project._id)}
                 className="absolute top-4 right-4 text-blue-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
                 title="Delete Board"
               >
                 <FaTrash size={14} />
               </button>
 
-              <span className="truncate pr-6">{board.title}</span>
+              <span className="truncate pr-6">{project.name}</span>
               <span className="text-xs font-normal text-blue-200 group-hover:text-white transition-colors">Open Board →</span>
             </div>
           ))}

@@ -17,12 +17,11 @@ export default function RecentGenerations() {
   useEffect(() => {
     const fetchGenerations = async () => {
       try {
-        const response = await fetch('http://localhost:5000/generations');
-        if (!response.ok) throw new Error('Failed to fetch generations');
-        
-        
-        const data = await response.json() as Generation[];
-        setGenerations(data);
+        // TODO: Map to actual backend AI endpoint when project context is added to this page
+        // const response = await apiFetch('/ai/generations');
+        setGenerations([
+          { id: 1, title: 'E-Commerce Backlog', meta: '12 tasks created', status: 'COMPLETED' }
+        ]);
       } catch (error) {
         console.error("Error loading generations:", error);
       } finally {

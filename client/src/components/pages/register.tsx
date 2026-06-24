@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, User } from "lucide-react";
@@ -10,9 +10,10 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { registerSchema, type RegisterFormValues } from "@/models/auth-schemas.zod";
 import { useAuth } from "@/context/auth-context";
+import { apiFetch } from "@/lib/api";
 
 const Register = () => {
-  const { signUpWithEmail } = useAuth();
+  const { user, signUpWithEmail } = useAuth();
   const navigate = useNavigate();
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,17 @@ const Register = () => {
       setAuthError(null);
       setLoading(true);
       await signUpWithEmail(data.email, data.password, data.username);
+      
+      // Update backend with the user's name
+      try {
+        await apiFetch('/users/me', {
+          method: 'PATCH',
+          body: JSON.stringify({ firstName: data.username, lastName: '' })
+        });
+      } catch (e) {
+        console.error("Failed to sync name to backend", e);
+      }
+      
       navigate("/onboarding");
     } catch (error: any) {
       console.error(error);

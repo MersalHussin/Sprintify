@@ -20,6 +20,8 @@ import Layout from "./components/layout/Layout";
 import Workspaces from "./components/kanban/Workspaces";
 import Board from "./components/kanban/Board";
 
+import { ProtectedRoute, PublicRoute } from "@/components/auth";
+
 function RouteFallback() {
   return (
     <div className="flex min-h-svh items-center justify-center bg-background text-foreground dark:bg-slate-950 dark:text-white">
@@ -39,21 +41,30 @@ function App() {
               <Routes>
                 {/* Public / Unwrapped Routes */}
                 <Route index path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/terms" element={<Terms />} />
-                <Route path="*" element={<NotFound />} />
-                <Route path="/board/:boardId" element={<Board />} />
                 
-                {/* Routes Wrapped in Layout Sidebar */}
-                <Route element={<Layout />}>
-                  <Route path="/workspaces" element={<Workspaces />} />
-                  <Route path="/kanban" element={<Kanban />} />
-                  <Route path="/ai" element={<AI />} />
-                  <Route path="/boards" element={<Boards />} />
-                  <Route path="/settings" element={<Settings />} />
+                {/* Public Routes (Only for unauthenticated users) */}
+                <Route element={<PublicRoute />}>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
                 </Route>
+
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/board/:boardId" element={<Board />} />
+                  
+                  {/* Routes Wrapped in Layout Sidebar */}
+                  <Route element={<Layout />}>
+                    <Route path="/workspaces" element={<Workspaces />} />
+                    <Route path="/kanban" element={<Kanban />} />
+                    <Route path="/ai" element={<AI />} />
+                    <Route path="/boards" element={<Boards />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>

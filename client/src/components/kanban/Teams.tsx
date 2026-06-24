@@ -1,49 +1,58 @@
+import React, { useState, useEffect } from 'react';
 import { FaCopy, FaUsers, FaClock, FaPlus } from 'react-icons/fa6';
 import { useParams } from 'react-router';
 import Swal from 'sweetalert2';
+import { apiFetch } from '../../lib/api';
 
-const TEAM_MEMBERS = [
-  {
-    id: 1,
-    name: 'Sarah Jenkins',
-    title: 'Lead Designer',
-    status: 'Active',
-    team: 'Product Design',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    color: 'bg-teal-500'
-  },
-  {
-    id: 2,
-    name: 'Marcus Thorne',
-    title: 'Senior Dev',
-    status: 'Active',
-    team: 'Core API',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
-    color: 'bg-teal-500'
-  },
-  {
-    id: 3,
-    name: 'Elena Rodriguez',
-    title: 'Product Manager',
-    status: 'Away',
-    team: 'Operations',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
-    color: 'bg-teal-600'
-  },
-  {
-    id: 4,
-    name: 'David Chen',
-    title: 'QA Engineer',
-    status: 'Active',
-    team: 'Growth',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
-    color: 'bg-teal-500'
-  }
-];
+const DEFAULT_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg?seed=';
 
-export default function Teams() {
+interface MemberType {
+  userId: string;
+  role: string;
+  joinedAt: string;
+  user: {
+    id: string;
+    name: string;
+    professionalTitle?: string;
+  };
+}
+
+interface InviteType {
+  _id: string;
+  email: string;
+  status: string;
+}
+
+export default function Teams({ teamId }: { teamId?: string | null }) {
   const { boardId } = useParams();
   const boardCode = `#${boardId === 'dummy-workspace-1' ? '2213492' : boardId}`;
+
+  const [members, setMembers] = useState<MemberType[]>([]);
+  const [invites, setInvites] = useState<InviteType[]>([]);
+
+  const loadTeamData = async () => {
+    if (!teamId || boardId === 'dummy-workspace-1') {
+      // Dummy data for dummy workspace
+      setMembers([{
+        userId: '1', role: 'manager', joinedAt: '', user: { id: '1', name: 'Sarah Jenkins', professionalTitle: 'Lead Designer' }
+      }]);
+      return;
+    }
+
+    try {
+      const teamRes = await apiFetch(`/teams/${teamId}`);
+      if (teamRes?.members) setMembers(teamRes.members);
+
+      const invitesRes = await apiFetch(`/teams/${teamId}/invitations`);
+      if (invitesRes?.invitations) setInvites(invitesRes.invitations);
+    } catch (error) {
+      console.error("Error fetching team data", error);
+    }
+  };
+
+  useEffect(() => {
+    loadTeamData();
+  }, [teamId]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(boardCode);
@@ -54,6 +63,30 @@ export default function Teams() {
       timer: 1500,
       showConfirmButton: false
     });
+  const handleAddMember = async () => {
+    if (!teamId || boardId === 'dummy-workspace-1') return;
+
+    const { value: email } = await Swal.fire({
+      title: 'Invite Team Member',
+      input: 'email',
+      inputPlaceholder: 'Enter email address',
+      showCancelButton: true,
+      confirmButtonColor: '#1d4ed8',
+      confirmButtonText: 'Send Invite'
+    });
+
+    if (!email) return;
+
+    try {
+      await apiFetch(`/teams/${teamId}/invitations`, {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+      Swal.fire('Success', 'Invitation sent!', 'success');
+      loadTeamData();
+    } catch (error: any) {
+      Swal.fire('Error', error.message || 'Failed to send invite', 'error');
+    }
   };
 
   return (
@@ -85,7 +118,7 @@ export default function Teams() {
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Members</p>
-            <p className="text-2xl font-bold text-gray-900">24</p>
+            <p className="text-2xl font-bold text-gray-900">{members.length}</p>
           </div>
         </div>
 
@@ -95,7 +128,7 @@ export default function Teams() {
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pending Invites</p>
-            <p className="text-2xl font-bold text-gray-900">3</p>
+            <p className="text-2xl font-bold text-gray-900">{invites.length}</p>
           </div>
         </div>
       </div>
@@ -104,80 +137,73 @@ export default function Teams() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         {/* Active Members */}
-        {TEAM_MEMBERS.map(member => (
-          <div key={member.id} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm flex flex-col relative">
-            <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="8" cy="3" r="1.5" />
-                <circle cx="8" cy="8" r="1.5" />
-                <circle cx="8" cy="13" r="1.5" />
-              </svg>
-            </button>
-            
+        {members.map(member => (
+          <div key={member.userId} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm flex flex-col relative">
             <div className="flex items-center gap-4 mb-6">
               <div className="relative">
-                <div className={`w-14 h-14 rounded-2xl ${member.color} overflow-hidden`}>
-                  <img src={member.avatar} alt={member.name} className="w-full h-full object-cover pt-2" />
+                <div className={`w-14 h-14 rounded-2xl bg-teal-500 overflow-hidden`}>
+                  <img src={DEFAULT_AVATAR + member.user?.name} alt={member.user?.name} className="w-full h-full object-cover pt-2" />
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${member.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
+                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white bg-emerald-500`}></div>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-lg leading-tight">{member.name}</h3>
-                <p className="text-gray-500 text-sm">{member.title}</p>
+                <h3 className="font-bold text-gray-900 text-lg leading-tight">{member.user?.name || "Unknown User"}</h3>
+                <p className="text-gray-500 text-sm">{member.user?.professionalTitle || member.role}</p>
               </div>
             </div>
 
             <div className="flex justify-between items-center text-sm mb-3">
               <span className="text-gray-400">Status</span>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${member.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
-                {member.status}
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700`}>
+                Active
               </span>
             </div>
             
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400">Team</span>
-              <span className="font-bold text-gray-900">{member.team}</span>
+              <span className="text-gray-400">Role</span>
+              <span className="font-bold text-gray-900 capitalize">{member.role}</span>
             </div>
           </div>
         ))}
 
-        {/* Pending Invite Card */}
-        <div className="bg-slate-50 border border-gray-200 border-dashed rounded-xl p-6 flex flex-col relative">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gray-200 flex items-center justify-center text-gray-400">
-              <FaUsers size={20} />
+        {/* Pending Invite Cards */}
+        {invites.map(invite => (
+          <div key={invite._id} className="bg-slate-50 border border-gray-200 border-dashed rounded-xl p-6 flex flex-col relative">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-gray-200 flex items-center justify-center text-gray-400">
+                <FaUsers size={20} />
+              </div>
+              <div className="truncate">
+                <h3 className="font-bold text-gray-600 text-lg leading-tight truncate">{invite.email}</h3>
+                <p className="text-gray-400 text-sm">Invited</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-gray-600 text-lg leading-tight">Alex Rivera</h3>
-              <p className="text-gray-400 text-sm">Frontend Developer</p>
-            </div>
-          </div>
 
-          <div className="flex justify-between items-center text-sm mb-3">
-            <span className="text-gray-400">Status</span>
-            <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
-              Pending Invite
-            </span>
+            <div className="flex justify-between items-center text-sm mb-3">
+              <span className="text-gray-400">Status</span>
+              <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
+                Pending Invite
+              </span>
+            </div>
           </div>
-          
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-400">Team</span>
-            <span className="font-bold text-gray-500">Core App</span>
-          </div>
-        </div>
+        ))}
 
         {/* Add New Member Card */}
-        <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-colors group h-full min-h-[220px]">
+        <div 
+          onClick={handleAddMember}
+          className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-colors group h-full min-h-[220px]"
+        >
           <div className="w-12 h-12 rounded-xl bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center text-gray-400 group-hover:text-blue-600 transition-colors">
             <FaPlus size={16} />
           </div>
           <div className="text-center">
             <h3 className="font-bold text-gray-900 mb-1">Add new team member</h3>
-            <p className="text-xs text-gray-400 font-medium">Start collaborating on Project Alpha</p>
+            <p className="text-xs text-gray-400 font-medium">Invite users to collaborate</p>
           </div>
         </div>
 
       </div>
     </div>
   );
+}
 }

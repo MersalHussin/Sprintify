@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
@@ -12,7 +12,7 @@ import { loginSchema, type LoginFormValues } from "@/models/auth-schemas.zod";
 import { useAuth } from "@/context/auth-context";
 
 const Login = () => {
-  const { signInWithEmail } = useAuth();
+  const { user, signInWithEmail } = useAuth();
   const navigate = useNavigate();
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ const Login = () => {
       setAuthError(null);
       setLoading(true);
       await signInWithEmail(data.email, data.password);
-      navigate("/dashboard");
+      navigate("/ai");
     } catch (error: any) {
       console.error(error);
       setAuthError(error.message || "An error occurred during sign-in.");

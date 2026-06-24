@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-
 import { FaPlus, FaFilter, FaTrash, FaArrowLeft, FaUsers } from "react-icons/fa6";
 import Swal from "sweetalert2";
+import { apiFetch } from "../../lib/api";
 import {
   DragDropContext,
   Droppable,
@@ -14,18 +14,26 @@ import Teams from "./Teams";
 
 // 1. حذفنا الـ BoardProps لأننا هنجيب الـ boardId من الـ URL
 
-// 2. تعريف شكل الـ Column
+// 2. تعريف شكل الـ Column (Now Hardcoded based on backend enum)
 interface ColumnType {
   id: string;
   title: string;
-  boardId: string | number;
 }
+
+const DEFAULT_COLUMNS: ColumnType[] = [
+  { id: "Backlog", title: "Backlog" },
+  { id: "To Do", title: "To Do" },
+  { id: "In Progress", title: "In Progress" },
+  { id: "Review", title: "Review" },
+  { id: "Done", title: "Done" },
+];
 
 // 3. تعريف شكل الـ Task
 interface TaskType {
-  id: string;
+  _id: string;
   title: string;
-  columnId: string;
+  status: string; // Used instead of columnId
+  priority?: string;
   tag?: string;
   tagColor?: string;
 }
@@ -34,25 +42,42 @@ export default function Board() {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const [boardTitle, setBoardTitle] = useState("Loading...");
-  const [columns, setColumns] = useState<ColumnType[]>([]);
+  const [teamId, setTeamId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskType[]>([]);
-  const [editingColId, setEditingColId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"board" | "team">("board");
 
   // ==========================================
   // 1. جلب البيانات المفلترة حسب الـ boardId الحالي
   // ==========================================
   const fetchData = async () => {
-    try {
-      const colsRes = await fetch(
-        `http://localhost:4000/columns?boardId=${boardId}`,
-      );
-      const colsData = await colsRes.json();
-      setColumns(colsData as ColumnType[]);
+    if (boardId === 'dummy-workspace-1') {
+      setBoardTitle("Project Alpha Workspace");
+      const DUMMY_TASKS: TaskType[] = [
+        { _id: "1", title: "Design sprint planning template", status: "To Do", tag: "Design", tagColor: "purple" },
+        { _id: "2", title: "Set up CI/CD pipeline", status: "To Do", tag: "DevOps", tagColor: "orange" },
+        { _id: "3", title: "Write API documentation", status: "To Do", tag: "Docs", tagColor: "green" },
+        { _id: "4", title: "Implement user authentication", status: "In Progress", tag: "Auth", tagColor: "red" },
+        { _id: "5", title: "Build notification system", status: "In Progress", tag: "Feature", tagColor: "blue" },
+        { _id: "6", title: "Project setup & configuration", status: "Done", tag: "Setup", tagColor: "gray" },
+        { _id: "7", title: "Design system tokens", status: "Done", tag: "Design", tagColor: "purple" },
+      ];
+      setTasks(DUMMY_TASKS);
+      return;
+    }
 
-      const tasksRes = await fetch("http://localhost:4000/tasks");
-      const tasksData = await tasksRes.json();
-      setTasks(tasksData as TaskType[]);
+    try {
+      // Fetch board (project) details to get title
+      const projectData = await apiFetch(`/projects/${boardId}`);
+      if (projectData && projectData.project) {
+        setBoardTitle(projectData.project.name);
+        setTeamId(projectData.project.teamId);
+      } else {
+        setBoardTitle("Workspace Board");
+      }
+
+      // Fetch Tasks
+      const tasksData = await apiFetch(`/projects/${boardId}/tasks`);
+      setTasks(tasksData?.tasks || tasksData?.items || []);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -74,21 +99,23 @@ export default function Board() {
     )
       return;
 
-    const newColumnId = destination.droppableId;
+    const newStatus = destination.droppableId;
 
     const updatedTasks = tasks.map((task) => {
-      if (task.id === draggableId) {
-        return { ...task, columnId: newColumnId };
+      if (task._id === draggableId) {
+        return { ...task, status: newStatus };
       }
       return task;
     });
+
     setTasks(updatedTasks);
 
+    if (boardId === 'dummy-workspace-1') return; // Do not save dummy drag to backend
+
     try {
-      await fetch(`http://localhost:4000/tasks/${draggableId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ columnId: newColumnId }),
+      await apiFetch(`/tasks/${draggableId}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: newStatus }),
       });
     } catch (error) {
       console.error("Error saving drag drop position:", error);
@@ -96,85 +123,7 @@ export default function Board() {
     }
   };
 
-  // ==========================================
-  // 3. إضافة عمود جديد
-  // ==========================================
-  const handleAddColumn = async () => {
-    const { value: columnName } = await Swal.fire({
-      title: "Add New Column",
-      input: "text",
-      inputPlaceholder: "e.g. In Progress",
-      showCancelButton: true,
-      confirmButtonColor: "#1d4ed8",
-      confirmButtonText: "Add",
-    });
 
-    if (!columnName || !columnName.trim()) return;
-
-    try {
-      const res = await fetch("http://localhost:4000/columns", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: columnName.trim(), boardId: boardId }),
-      });
-      const data = await res.json();
-      setColumns([...columns, data as ColumnType]);
-    } catch (error) {
-      console.error("Error adding column:", error);
-    }
-  };
-
-  // ==========================================
-  // 4. مسح عمود
-  // ==========================================
-  const handleDeleteColumn = async (columnId: string) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This will delete the column and ALL tasks inside it!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await fetch(`http://localhost:4000/columns/${columnId}`, {
-          method: "DELETE",
-        });
-        setColumns(columns.filter((col) => col.id !== columnId));
-        setTasks(tasks.filter((task) => task.columnId !== columnId));
-        Swal.fire("Deleted!", "Column has been deleted.", "success");
-      } catch (error) {
-        console.error("Error deleting column:", error);
-      }
-    }
-  };
-
-  // ==========================================
-  // 5. تعديل اسم العمود بالماوس
-  // ==========================================
-  const handleUpdateColumnName = async (columnId: string, newTitle: string) => {
-    setEditingColId(null);
-    if (!newTitle || !newTitle.trim()) return;
-
-    try {
-      const res = await fetch(`http://localhost:4000/columns/${columnId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle.trim() }),
-      });
-      const updatedCol = await res.json();
-      setColumns(
-        columns.map((col) =>
-          col.id === columnId ? (updatedCol as ColumnType) : col,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating column title:", error);
-    }
-  };
 
   // ==========================================
   // 6. إضافة تاسك جديد
@@ -193,19 +142,18 @@ export default function Board() {
 
     const newTask = {
       title: taskTitle.trim(),
-      tag: "Feature",
-      tagColor: "blue",
-      columnId: columnId,
+      status: columnId,
     };
 
+    if (boardId === 'dummy-workspace-1') return; // Do not save dummy data to backend
+
     try {
-      const res = await fetch("http://localhost:4000/tasks", {
+      const res = await apiFetch(`/projects/${boardId}/tasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
       });
-      const data = await res.json();
-      setTasks([...tasks, data as TaskType]);
+      const data = res.task;
+      if (data) setTasks([...tasks, data as TaskType]);
     } catch (error) {
       console.error("Error adding task:", error);
     }
@@ -215,11 +163,12 @@ export default function Board() {
   // 7. مسح تاسك
   // ==========================================
   const handleDeleteTask = async (taskId: string) => {
+    if (boardId === 'dummy-workspace-1') return; // Do not save dummy data to backend
     try {
-      await fetch(`http://localhost:4000/tasks/${taskId}`, {
+      await apiFetch(`/tasks/${taskId}`, {
         method: "DELETE",
       });
-      setTasks(tasks.filter((task) => task.id !== taskId));
+      setTasks(tasks.filter((task) => task._id !== taskId));
     } catch (error) {
       console.error("Error deleting task:", error);
     }
@@ -255,74 +204,38 @@ export default function Board() {
               {activeTab === 'team' ? 'Back to Board' : 'Team Members'}
             </button>
             {activeTab === 'board' && (
-              <button
-                onClick={handleAddColumn}
-                className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm"
-              >
-                <FaPlus />
-                Add Column
-              </button>
+              <div className="flex gap-2">
+                {/* Custom Columns removed to comply with fixed backend columns */}
+              </div>
             )}
           </div>
         </div>
 
         {activeTab === 'team' ? (
           <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <Teams />
+            <Teams teamId={teamId} />
           </div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
           <div className="flex-1 overflow-x-auto pb-4">
             <div className="flex gap-6 h-full items-start">
-              {columns.map((column) => (
+              {DEFAULT_COLUMNS.map((column) => (
                 <div
                   key={column.id}
                   className="w-80 flex-shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col max-h-full group"
                 >
                   {/* هيدر العمود */}
                   <div className="p-3 flex justify-between items-center hover:bg-gray-200/50 rounded-t-xl transition-colors">
-                    {editingColId === column.id ? (
-                      <input
-                        type="text"
-                        className="font-bold text-gray-700 bg-white border border-blue-400 rounded px-2 py-1 w-full outline-none shadow-sm"
-                        defaultValue={column.title}
-                        autoFocus
-                        onBlur={(e) =>
-                          handleUpdateColumnName(column.id, e.target.value)
-                        }
-                        onKeyDown={(
-                          e: React.KeyboardEvent<HTMLInputElement>,
-                        ) => {
-                          if (e.key === "Enter")
-                            handleUpdateColumnName(
-                              column.id,
-                              e.currentTarget.value,
-                            );
-                        }}
-                      />
-                    ) : (
-                      <h3
-                        className="font-bold text-gray-700 cursor-pointer flex-1"
-                        onClick={() => setEditingColId(column.id)}
-                        title="Click to edit name"
-                      >
-                        {column.title}
-                      </h3>
-                    )}
-
+                    <h3 className="font-bold text-gray-700 flex-1">
+                      {column.title}
+                    </h3>
                     <div className="flex items-center gap-2">
                       <span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full font-bold">
                         {
-                          tasks.filter((task) => task.columnId === column.id)
+                          tasks.filter((task) => task.status === column.id)
                             .length
                         }
                       </span>
-                      <button
-                        onClick={() => handleDeleteColumn(column.id)}
-                        className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                      >
-                        <FaTrash size={12} />
-                      </button>
                     </div>
                   </div>
 
@@ -335,11 +248,11 @@ export default function Board() {
                         className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 min-h-[150px]"
                       >
                         {tasks
-                          .filter((task) => task.columnId === column.id)
+                          .filter((task) => task.status === column.id)
                           .map((task, index) => (
                             <Draggable
-                              key={String(task.id)}
-                              draggableId={String(task.id)}
+                              key={String(task._id)}
+                              draggableId={String(task._id)}
                               index={index}
                             >
                               {(provided: any) => (
@@ -350,7 +263,7 @@ export default function Board() {
                                   className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-blue-400 transition-colors group/card relative"
                                 >
                                   <button
-                                    onClick={() => handleDeleteTask(task.id)}
+                                    onClick={() => handleDeleteTask(task._id)}
                                     className="absolute top-3 right-3 text-gray-300 hover:text-red-500 opacity-0 group-hover/card:opacity-100 transition-opacity p-1"
                                   >
                                     <FaTrash size={12} />
