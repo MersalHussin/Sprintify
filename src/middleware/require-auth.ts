@@ -9,7 +9,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
     try {
         req.user = await verifyToken(token);
-        next();
+        return next();
     } catch {
         return handleResponse(res, 401, undefined, "Invalid or expired token");
     }

@@ -34,10 +34,15 @@ const ERROR_MESSAGES: Record<StatusCode, string> = {
     504: "The server timed out",
 };
 
-export const handleResponse = (res: Response, statusCode: StatusCode, data?: any, errorMessage?: string) => {
+export const handleResponse = <TData = undefined>(
+    res: Response,
+    statusCode: StatusCode,
+    data?: TData,
+    errorMessage?: string,
+) => {
     return res.status(statusCode).json({
         status: STATUS_CODES[statusCode],
         message: errorMessage ?? ERROR_MESSAGES[statusCode],
-        ...(data && { data }),
+        ...(data !== undefined && { data }),
     });
 };

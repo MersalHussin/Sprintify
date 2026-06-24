@@ -24,5 +24,5 @@ export const resolveTask = async (req: Request, res: Response, next: NextFunctio
   req.project = project;
   req.callerMembership = { role: membership.role };
 
-  next();
+  return next();
 };

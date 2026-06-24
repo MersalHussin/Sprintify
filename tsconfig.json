@@ -11,6 +11,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "isolatedModules": true,
     "incremental": true,

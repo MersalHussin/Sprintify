@@ -10,7 +10,7 @@ import { Team } from "../models/team";
 import { TeamMembership } from "../models/team-memberships";
 
 async function deleteCommentsForTasks(
-  taskFilter: Record<string, unknown>,
+  taskFilter: { projectId: Types.ObjectId } | { teamId: Types.ObjectId },
   session: ClientSession,
 ): Promise<void> {
   // distinct(filter) issues one indexed scan; find().distinct() would hydrate full task docs first.

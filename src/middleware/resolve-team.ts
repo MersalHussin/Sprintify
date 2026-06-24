@@ -28,5 +28,5 @@ export const resolveTeam = async (req: Request, res: Response, next: NextFunctio
   req.callerMembership = { role: callerMembership.role };
   req.teamMembers = buildTeamMembers(memberships);
 
-  next();
+  return next();
 };

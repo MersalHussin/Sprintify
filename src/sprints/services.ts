@@ -3,29 +3,25 @@ import type { Types } from "mongoose";
 import type { ProjectDocument } from "../models/project";
 import { Sprint, type SprintDocument } from "../models/sprint";
 import { Task } from "../models/task";
+import { omitKeys } from "../types/api";
+import type { SprintCreateInput, SprintUpdateInput } from "../types/sprint";
+
+const PROTECTED_SPRINT_KEYS = ["projectId", "teamId", "status", "completedAt"] as const;
 
 export const listSprintsService = async (projectId: Types.ObjectId) => {
   return Sprint.find({ projectId });
 };
 
-export const createSprintService = async (project: ProjectDocument, sprint: Record<string, unknown>) => {
-  const { projectId: _projectId, teamId: _teamId, status: _status, completedAt: _completedAt, ...fields } = sprint;
+export const createSprintService = async (project: ProjectDocument, sprint: SprintCreateInput) => {
   return Sprint.create({
-    ...fields,
+    ...sprint,
     projectId: project._id,
     teamId: project.teamId,
   });
 };
 
-export const updateSprintService = async (sprint: SprintDocument, data: Record<string, unknown>) => {
-  const {
-    projectId: _projectId,
-    teamId: _teamId,
-    status: _status,
-    completedAt: _completedAt,
-    ...fields
-  } = data;
-
+export const updateSprintService = async (sprint: SprintDocument, data: SprintUpdateInput) => {
+  const fields = omitKeys({ ...data } as Record<string, unknown>, PROTECTED_SPRINT_KEYS);
   const updated = await Sprint.findByIdAndUpdate(sprint._id, fields, { new: true, runValidators: true });
   if(!updated) throw new Error("Sprint not found");
   return updated;

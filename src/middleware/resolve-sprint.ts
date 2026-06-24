@@ -23,5 +23,5 @@ export const resolveSprint = async (req: Request, res: Response, next: NextFunct
   req.project = project;
   req.callerMembership = { role: membership.role };
 
-  next();
+  return next();
 };

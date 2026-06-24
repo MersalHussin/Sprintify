@@ -35,5 +35,5 @@ export const requireTeamRole = (role: TeamRole) => async (req: Request, res: Res
   if(!callerRole) return handleResponse(res, 404, undefined, "You are not a member of this team");
   if(callerRole !== role) return handleResponse(res, 403);
 
-  next();
+  return next();
 };

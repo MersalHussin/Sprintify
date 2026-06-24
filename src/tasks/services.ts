@@ -3,9 +3,20 @@ import { TaskComment } from "../models/task-comment";
 import type { ProjectDocument } from "../models/project";
 import { TeamMembership } from "../models/team-memberships";
 import { assertTaskMember } from "../lib/task-access";
+import { omitKeys } from "../types/api";
+import type {
+  CommentInput,
+  SubtaskInput,
+  TaskCreateInput,
+  TaskUpdateInput,
+} from "../types/task";
 
-type Subtask = { name: string; completed?: boolean };
-type Comment = { content: string };
+const PROTECTED_TASK_KEYS = ["projectId", "teamId", "createdBy"] as const;
+
+type SubtaskPositionalUpdate = {
+  "subtasks.$.name"?: string;
+  "subtasks.$.completed"?: boolean;
+};
 
 // Task retrieval services
 export const getTasksByProjectIdService = async (projectId: string) => {
@@ -31,24 +42,23 @@ export const getTaskByIdService = async (taskId: string, userId: string) => {
 export const createTaskService = async (
   userId: string,
   project: ProjectDocument,
-  task: Record<string, unknown>,
+  task: TaskCreateInput,
 ) => {
-  const { projectId: _projectId, teamId: _teamId, createdBy: _createdBy, ...fields } = task;
   return Task.create({
-    ...fields,
+    ...task,
     projectId: project._id,
     teamId: project.teamId,
     createdBy: userId,
   });
 };
 
-export const updateTaskService = async (taskId: string, userId: string, task: Record<string, unknown>) => {
+export const updateTaskService = async (taskId: string, userId: string, task: TaskUpdateInput) => {
   await assertTaskMember(taskId, userId);
 
-  const { projectId, teamId, createdBy, ...fields } = task;
+  const fields = omitKeys({ ...task } as Record<string, unknown>, PROTECTED_TASK_KEYS);
   const updated = await Task.findByIdAndUpdate(taskId, fields, { new: true, runValidators: true });
   if(!updated) throw new Error("Task not found");
-  
+
   return updated;
 };
 
@@ -60,7 +70,7 @@ export const deleteTaskService = async (taskId: string, userId: string) => {
 };
 
 // Subtask-related services
-export const createSubtaskService = async (taskId: string, userId: string, subtask: Subtask) => {
+export const createSubtaskService = async (taskId: string, userId: string, subtask: SubtaskInput) => {
   await assertTaskMember(taskId, userId);
 
   const updated = await Task.findByIdAndUpdate(
@@ -72,10 +82,15 @@ export const createSubtaskService = async (taskId: string, userId: string, subta
   return updated;
 };
 
-export const updateSubtaskService = async (taskId: string, subtaskId: string, userId: string, subtask: Subtask) => {
+export const updateSubtaskService = async (
+  taskId: string,
+  subtaskId: string,
+  userId: string,
+  subtask: SubtaskInput,
+) => {
   await assertTaskMember(taskId, userId);
 
-  const update: Record<string, unknown> = {};
+  const update: SubtaskPositionalUpdate = {};
   if(subtask.name !== undefined) update["subtasks.$.name"] = subtask.name;
   if(subtask.completed !== undefined) update["subtasks.$.completed"] = subtask.completed;
   if(Object.keys(update).length === 0) {
@@ -106,13 +121,18 @@ export const deleteSubtaskService = async (taskId: string, subtaskId: string, us
 };
 
 // Comment-related services
-export const createCommentService = async (taskId: string, userId: string, comment: Comment) => {
+export const createCommentService = async (taskId: string, userId: string, comment: CommentInput) => {
   await assertTaskMember(taskId, userId);
 
   return TaskComment.create({ taskId, author: userId, content: comment.content });
 };
 
-export const editCommentService = async (taskId: string, commentId: string, userId: string, comment: Comment) => {
+export const editCommentService = async (
+  taskId: string,
+  commentId: string,
+  userId: string,
+  comment: CommentInput,
+) => {
   const existing = await TaskComment.findOne({ _id: commentId, taskId });
   if(!existing || existing.author !== userId) throw new Error("Comment not found");
 

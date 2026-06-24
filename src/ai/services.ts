@@ -6,7 +6,8 @@ import { getOpenAI } from "../lib/openai";
 import { getRedis } from "../lib/redis";
 import { chatAssistantPrompt } from "../prompts/chat-assistant-prompt";
 import { taskGenerationPrompt } from "../prompts/task-generation-prompt";
-import { PRIORITIES, STATUSES } from "../models/task";
+import { parseJsonArray, parseJsonUnknown } from "../types/api";
+import type { GeneratedTask } from "../types/task";
 import type { ChatContext } from "../types/project-context";
 
 export type { ChatContext } from "../types/project-context";
@@ -26,8 +27,10 @@ export async function chatService(
   const chat = await redis.get(key);
 
   let messages: ChatCompletionMessageParam[] = [];
-  if(chat) messages = JSON.parse(chat);
-  else {
+  if(chat) {
+    const parsed = parseJsonUnknown(chat);
+    messages = Array.isArray(parsed) ? (parsed as ChatCompletionMessageParam[]) : [];
+  } else {
     messages.push({
       role: "system",
       content: chatAssistantPrompt(projectDetails, promptTeamMembers, usersById),
@@ -56,20 +59,14 @@ export async function chatService(
   return { sessionId, response: assistantMessage };
 }
 
-export type Task = {
-  name: string;
-  description: string;
-  priority: (typeof PRIORITIES)[number];
-  status: (typeof STATUSES)[number];
-  subtasks: { name: string; completed: boolean }[];
-};
+export type { GeneratedTask as Task } from "../types/task";
 
 export async function taskGenerationService(
-  userId: string,
+  _userId: string,
   context: ChatContext,
   projectId: string,
   message: string,
-): Promise<Task[]> {
+): Promise<GeneratedTask[]> {
   if(!projectId) throw new Error("Project ID is required");
   if(!message) throw new Error("Message is required");
 
@@ -96,12 +93,13 @@ export async function taskGenerationService(
     },
   });
 
-  const tasks = JSON.parse(response.choices[0]?.message.content ?? "{}");
+  const content = response.choices[0]?.message.content ?? "[]";
+  const tasks = parseJsonArray<GeneratedTask>(content.startsWith("[") ? content : "[]");
   const key = `task-generation:${projectId}`;
 
   await redis.set(key, JSON.stringify(tasks), { EX: env.ttlSeconds / 4 });
 
-  return tasks as Task[];
+  return tasks;
 }
 
 export async function getChatHistoryService(
@@ -118,5 +116,6 @@ export async function getChatHistoryService(
   const chat = await redis.get(key);
   if(!chat) return [];
 
-  return JSON.parse(chat);
+  const parsed = parseJsonUnknown(chat);
+  return Array.isArray(parsed) ? (parsed as ChatCompletionMessageParam[]) : [];
 }

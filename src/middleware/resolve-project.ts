@@ -62,5 +62,5 @@ export const resolveProject = async (req: Request, res: Response, next: NextFunc
   req.promptTeamMembers = toPromptTeamMembers(teamMembers);
   req.usersById = usersById;
 
-  next();
+  return next();
 };
