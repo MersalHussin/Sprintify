@@ -11,7 +11,7 @@ const envSchema = z
     firebaseProjectId: z.string().default(""),
     firebaseClientEmail: z.string().default(""),
     firebasePrivateKey: z.string().default(""),
-    frontendUrl: z.string().default("http://localhost:3000/"),
+    frontendUrl: z.string().default("http://localhost:5173"),
     githubToken: z.string().default(""),
     aiChatModel: z.string().default(""),
     aiTaskModel: z.string().default(""),
@@ -20,6 +20,9 @@ const envSchema = z
     redisURL: z.string().default("redis://127.0.0.1:6379"),
     ttlSeconds: z.coerce.number().int().positive().default(7200), // 120 mins
     aiBaseURL: z.string().default("https://models.github.ai/inference"),
+    brevoApiKey: z.string().default(""),
+    brevoFromEmail: z.union([z.string().email(), z.literal("")]).default(""),
+    brevoFromName: z.string().default("Sprintify"),
   })
   .superRefine((data, ctx) => {
     const alwaysRequired: ReadonlyArray<[keyof z.infer<typeof envSchema>, string]> = [
@@ -45,6 +48,8 @@ const envSchema = z
         ["githubToken", "GITHUB_TOKEN"],
         ["redisURL", "REDIS_URL"],
         ["frontendUrl", "FRONTEND_URL"],
+        ["brevoApiKey", "BREVO_API_KEY"],
+        ["brevoFromEmail", "BREVO_FROM_EMAIL"],
       ];
 
       for (const [key, envName] of prodRequired) {
@@ -100,10 +105,19 @@ const parsed: ParsedEnvironment = envSchema.parse({
   redisURL: process.env.REDIS_URL,
   ttlSeconds: process.env.TTL_SECONDS,
   aiBaseURL: process.env.AI_BASE_URL,
+  brevoApiKey: process.env.BREVO_API_KEY,
+  brevoFromEmail: process.env.BREVO_FROM_EMAIL,
+  brevoFromName: process.env.BREVO_FROM_NAME,
 });
+
+/** Strip trailing slash so CORS Origin matches the browser value exactly. */
+function normalizeFrontendUrl(url: string): string {
+  return url.replace(/\/+$/, "");
+}
 
 const env: Readonly<Environment> = {
   ...parsed,
+  frontendUrl: normalizeFrontendUrl(parsed.frontendUrl),
   aiChatModel: parsed.aiChatModel || parsed.aiModel,
   aiTaskModel: parsed.aiTaskModel || parsed.aiModel,
 };

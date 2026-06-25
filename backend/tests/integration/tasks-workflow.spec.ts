@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { Task } from "../../src/models/task";
 import { authed, TOKENS } from "../helpers";
 import { seedProjectWorkspace } from "../factories";
 
@@ -35,5 +36,47 @@ describe("project task workflow", () => {
     expect(response.status).toBe(200);
     expect(response.body.data.items).toHaveLength(1);
     expect(response.body.data.pagination.total).toBe(1);
+  });
+
+  it("allows assignees to update status and manage subtasks", async () => {
+    const { task } = await seedProjectWorkspace();
+    await Task.findByIdAndUpdate(task._id, { assignees: ["member-uid"] });
+
+    const statusResponse = await authed(TOKENS.member)
+      .put(`/api/tasks/${task._id}`)
+      .send({ status: "In Progress" });
+    expect(statusResponse.status).toBe(200);
+    expect(statusResponse.body.data.task.status).toBe("In Progress");
+
+    const forbiddenResponse = await authed(TOKENS.member)
+      .put(`/api/tasks/${task._id}`)
+      .send({ name: "Blocked rename" });
+    expect(forbiddenResponse.status).toBe(403);
+
+    const createSubtaskResponse = await authed(TOKENS.member)
+      .post(`/api/tasks/${task._id}/subtasks`)
+      .send({ name: "Assignee subtask" });
+    expect(createSubtaskResponse.status).toBe(201);
+
+    const subtaskId = createSubtaskResponse.body.data.task.subtasks[0]._id as string;
+    const patchResponse = await authed(TOKENS.member)
+      .patch(`/api/tasks/${task._id}/subtasks/${subtaskId}`)
+      .send({ completed: true });
+    expect(patchResponse.status).toBe(200);
+    expect(patchResponse.body.data.task.subtasks[0].completed).toBe(true);
+
+    const deleteResponse = await authed(TOKENS.member)
+      .delete(`/api/tasks/${task._id}/subtasks/${subtaskId}`);
+    expect(deleteResponse.status).toBe(200);
+    expect(deleteResponse.body.data.task.subtasks).toHaveLength(0);
+  });
+
+  it("forbids non-assignee members from updating tasks", async () => {
+    const { task } = await seedProjectWorkspace();
+
+    const response = await authed(TOKENS.member)
+      .put(`/api/tasks/${task._id}`)
+      .send({ status: "In Progress" });
+    expect(response.status).toBe(403);
   });
 });

@@ -6,6 +6,7 @@ export type AuthLayoutProps = {
   readonly prompt: string;
   readonly promptActionLabel: string;
   readonly promptActionTo: string;
+  readonly promptActionState?: unknown;
   readonly children: ReactNode;
 };
 
@@ -14,6 +15,7 @@ function AuthLayout({
   prompt,
   promptActionLabel,
   promptActionTo,
+  promptActionState,
   children,
 }: AuthLayoutProps) {
   return (
@@ -42,6 +44,7 @@ function AuthLayout({
             <span className="font-normal">{prompt} </span>
             <Link
               to={promptActionTo}
+              state={promptActionState}
               className="underline underline-offset-2 hover:text-foreground"
             >
               {promptActionLabel}

@@ -1,7 +1,10 @@
+import { attachCommentCounts } from "../tasks/services";
 import { User, type UserDocument } from "../models/user";
+import { Project } from "../models/project";
+import { Task } from "../models/task";
 import { TeamMembership } from "../models/team-memberships";
 import { getFirebaseAuth } from "../lib/firebase";
-import { USER_DISPLAY_FIELDS } from "../lib/query-projections";
+import { TASK_CONTEXT_FIELDS, USER_DISPLAY_FIELDS } from "../lib/query-projections";
 import { toAuthUser } from "../lib/users";
 import type { AuthUser } from "../types/user";
 
@@ -52,12 +55,50 @@ export const deleteMeService = async (userId: string) => {
   await getFirebaseAuth().deleteUser(userId);
 };
 
+export const getMyTasksService = async (userId: string) => {
+  const teamIds = await TeamMembership.find({ userId }).distinct("teamId");
+  if(teamIds.length === 0) return { groups: [] };
+
+  const tasks = await Task.find({
+    assignees: userId,
+    teamId: { $in: teamIds },
+  }).select(`${TASK_CONTEXT_FIELDS} projectId`);
+
+  const projectIds = [...new Set(tasks.map((task) => task.projectId.toString()))];
+  const projects = await Project.find({ _id: { $in: projectIds } }).select("_id name");
+  const projectById = new Map(projects.map((project) => [project._id.toString(), project]));
+
+  const grouped = new Map<string, { project: { _id: string; name: string }; tasks: typeof tasks }>();
+
+  for(const task of tasks) {
+    const projectId = task.projectId.toString();
+    const project = projectById.get(projectId);
+    if(!project) continue;
+
+    if(!grouped.has(projectId)) {
+      grouped.set(projectId, {
+        project: { _id: projectId, name: project.name },
+        tasks: [],
+      });
+    }
+    grouped.get(projectId)!.tasks.push(task);
+  }
+
+  const groups = await Promise.all(
+    [...grouped.values()].map(async (group) => ({
+      ...group,
+      tasks: await attachCommentCounts(group.tasks),
+    })),
+  );
+
+  return { groups };
+};
+
 export const getUserByIdService = async (callerId: string, userId: string): Promise<AuthUser> => {
   if(callerId !== userId) {
     const callerTeamIds = await TeamMembership.find({ userId: callerId }).distinct("teamId");
     if(callerTeamIds.length === 0) throw new Error("User not found");
 
-    // { userId, teamId: { $in } } uses the { userId: 1, teamId: 1 } compound index.
     const isTeammate = await TeamMembership.exists({ teamId: { $in: callerTeamIds }, userId });
     if(!isTeammate) throw new Error("User not found");
   }

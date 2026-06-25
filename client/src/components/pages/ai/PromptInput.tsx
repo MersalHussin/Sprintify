@@ -1,84 +1,70 @@
-import React, { useState, FormEvent } from 'react';
-import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from  'react-icons/fa6'
+import React, { FormEvent } from 'react';
+import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from 'react-icons/fa6';
 
-
-interface GenerationPayload {
-  title: string;
-  meta: string;
-  status: string;
+interface PromptInputProps {
+  projectId: string | null;
+  promptText: string;
+  isGenerating: boolean;
+  onPromptChange: (value: string) => void;
+  onGenerate: (prompt: string) => void;
 }
 
-export default function PromptInput() {
-  
-  const [promptText, setPromptText] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-
- 
-  const handleGenerate = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); 
-    
-    if (!promptText.trim()) return; 
-
-    setIsGenerating(true);
-
-    try {
-      // Simulate generation for now since the real backend requires a projectId
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setPromptText('');
-    } catch (error) {
-      
-      console.error("Error creating generation:", error);
-    } finally {
-      setIsGenerating(false);
-    }
+export default function PromptInput({
+  projectId,
+  promptText,
+  isGenerating,
+  onPromptChange,
+  onGenerate,
+}: PromptInputProps) {
+  const handleGenerate = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmed = promptText.trim();
+    if (!trimmed || !projectId || isGenerating) return;
+    onGenerate(trimmed);
   };
 
   return (
     <div className="flex flex-col items-center text-center w-full mt-4">
-      
-      <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+      <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
         <FaWandMagicSparkles />
         <span>Powered by Sprintify-4</span>
       </div>
 
-      <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-        What are we <span className="text-blue-600">building</span> today?
+      <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+        What are we <span className="text-primary">building</span> today?
       </h1>
 
-      <p className="text-gray-500 max-w-xl mx-auto mb-10 text-base md:text-lg leading-relaxed">
+      <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-base md:text-lg leading-relaxed">
         Define your goals and let AI orchestrate your entire workspace—
         from backlog items to sprint schedules.
       </p>
 
-      <form 
+      <form
         onSubmit={handleGenerate}
-        className="w-full max-w-3xl flex items-center bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-2 border border-gray-100 transition-all focus-within:shadow-md focus-within:border-blue-300"
+        className="w-full max-w-3xl flex items-center bg-card rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-2 border border-border transition-all focus-within:shadow-md focus-within:border-primary/40"
       >
-        
-        <div className="pl-4 pr-2 text-blue-500">
-          <FaRegLightbulb  />
+        <div className="pl-4 pr-2 text-primary">
+          <FaRegLightbulb />
         </div>
 
         <input
           type="text"
           value={promptText}
-          onChange={(e) => setPromptText(e.target.value)}
+          onChange={(e) => onPromptChange(e.target.value)}
           placeholder="Build a fintech mobile app backlog..."
-          className="flex-1 bg-transparent py-3 px-2 outline-none text-gray-700 placeholder-gray-400 text-lg"
-          disabled={isGenerating}
+          className="flex-1 bg-transparent py-3 px-2 outline-none text-foreground placeholder:text-muted-foreground text-lg"
+          disabled={isGenerating || !projectId}
         />
 
         <button
           type="submit"
-          disabled={isGenerating || !promptText.trim()}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-6 py-3 rounded-xl flex items-center gap-2 transition-colors duration-200"
+          disabled={isGenerating || !promptText.trim() || !projectId}
+          className="bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-medium px-6 py-3 rounded-xl flex items-center gap-2 transition-colors duration-200"
         >
-          {isGenerating ? 'Generating...' : 'Generate'}
+          {isGenerating ? 'Generating…' : 'Generate'}
           {!isGenerating && <FaArrowRight />}
         </button>
-
       </form>
-
     </div>
   );
 }

@@ -2,18 +2,64 @@ import crypto from "node:crypto";
 import type { Types } from "mongoose";
 
 import { buildPaginatedResult, type PaginationParams } from "../lib/pagination";
+import { generateUniqueTeamCode, normalizeTeamCode } from "../lib/team-code";
+import { deleteTeamCascade } from "../services/delete-cascade";
 import { Invitation } from "../models/invitation";
 import { Team, type TeamDocument } from "../models/team";
 import { TeamMembership } from "../models/team-memberships";
-import type { TeamRole } from "../types/team";
+import { TEAM_ROLES, type TeamRole } from "../types/team";
 import type { AuthUser } from "../types/user";
 
-const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+async function countManagers(teamId: Types.ObjectId): Promise<number> {
+  return TeamMembership.countDocuments({ teamId, role: "manager" });
+}
 
-export const createTeamService = async (userId: string, name: string) => {
-  const team = await Team.create({ name, createdBy: userId });
+const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const DEFAULT_WORKSPACE_NAME = "My Workspace";
+
+const defaultWorkspaceCreationLocks = new Map<string, Promise<TeamDocument>>();
+
+async function findDefaultWorkspaceTeam(userId: string) {
+  const memberships = await TeamMembership.find({ userId }).select("teamId");
+  if(memberships.length === 0) return null;
+
+  return Team.findOne({
+    _id: { $in: memberships.map((membership) => membership.teamId) },
+    name: DEFAULT_WORKSPACE_NAME,
+    createdBy: userId,
+  });
+}
+
+async function createTeamRecord(userId: string, name: string) {
+  const code = await generateUniqueTeamCode();
+  const team = await Team.create({ name, code, createdBy: userId });
   await TeamMembership.create({ teamId: team._id, userId, role: "manager" });
   return team;
+}
+
+export const createTeamService = async (userId: string, name: string) => {
+  const trimmedName = name.trim();
+
+  if(trimmedName === DEFAULT_WORKSPACE_NAME) {
+    const existing = await findDefaultWorkspaceTeam(userId);
+    if(existing) return existing;
+
+    const pending = defaultWorkspaceCreationLocks.get(userId);
+    if(pending) return pending;
+
+    const promise = (async () => {
+      const existingAfterLock = await findDefaultWorkspaceTeam(userId);
+      if(existingAfterLock) return existingAfterLock;
+      return createTeamRecord(userId, trimmedName);
+    })().finally(() => {
+      defaultWorkspaceCreationLocks.delete(userId);
+    });
+
+    defaultWorkspaceCreationLocks.set(userId, promise);
+    return promise;
+  }
+
+  return createTeamRecord(userId, trimmedName);
 };
 
 export const listUserTeamsService = async (
@@ -64,6 +110,34 @@ export const joinTeamViaInvitationService = async (
   return { team, membershipRole };
 };
 
+export const joinTeamByCodeService = async (user: AuthUser, teamCode: string) => {
+  const code = normalizeTeamCode(teamCode);
+  const team = await Team.findOne({ code });
+  if(!team) throw new Error("Team not found");
+
+  const existing = await TeamMembership.findOne({ teamId: team._id, userId: user.id });
+  if(existing) return { team, membershipRole: existing.role };
+
+  const membershipRole: TeamRole = "member";
+  await TeamMembership.create({ teamId: team._id, userId: user.id, role: membershipRole });
+
+  return { team, membershipRole };
+};
+
+export const joinTeamService = async (
+  user: AuthUser,
+  joinCode: string,
+  options: { requireEmailMatch: boolean },
+) => {
+  const trimmed = joinCode.trim();
+  if(!trimmed) throw new Error("Join code is required");
+
+  const invitation = await Invitation.findOne({ token: trimmed });
+  if(invitation) return joinTeamViaInvitationService(user, trimmed, options);
+
+  return joinTeamByCodeService(user, trimmed);
+};
+
 export const updateTeamService = async (team: TeamDocument, name: string) => {
   const updated = await Team.findByIdAndUpdate(team._id, { name }, { new: true });
   if(!updated) throw new Error("Team not found");
@@ -98,7 +172,59 @@ export const updateTeamMemberRoleService = async (
   userId: string,
   role: TeamRole,
 ) => {
-  const member = await TeamMembership.findOneAndUpdate({ teamId, userId }, { role }, { new: true });
+  if(!TEAM_ROLES.includes(role)) throw new Error("Invalid team role");
+
+  const member = await TeamMembership.findOne({ teamId, userId });
   if(!member) throw new Error("Team member not found");
+
+  if(member.role === "manager" && role === "member") {
+    const managerCount = await countManagers(teamId);
+    if(managerCount <= 1) throw new Error("Cannot demote the only manager");
+  }
+
+  member.role = role;
+  await member.save();
   return member;
+};
+
+async function removeMemberWithEmptyTeamCleanup(
+  teamId: Types.ObjectId,
+  userId: string,
+): Promise<{ teamDeleted: boolean }> {
+  const memberCount = await TeamMembership.countDocuments({ teamId });
+  if(memberCount - 1 === 0) {
+    await deleteTeamCascade(teamId);
+    return { teamDeleted: true };
+  }
+
+  await TeamMembership.deleteOne({ teamId, userId });
+  return { teamDeleted: false };
+}
+
+export const kickTeamMemberService = async (
+  teamId: Types.ObjectId,
+  userId: string,
+  actorUserId: string,
+) => {
+  if(userId === actorUserId) throw new Error("Cannot remove yourself from the team");
+
+  const member = await TeamMembership.findOne({ teamId, userId });
+  if(!member) throw new Error("Team member not found");
+
+  return removeMemberWithEmptyTeamCleanup(teamId, userId);
+};
+
+export const leaveTeamService = async (teamId: Types.ObjectId, userId: string) => {
+  const member = await TeamMembership.findOne({ teamId, userId });
+  if(!member) throw new Error("Team member not found");
+
+  const memberCount = await TeamMembership.countDocuments({ teamId });
+  if(memberCount - 1 === 0) return removeMemberWithEmptyTeamCleanup(teamId, userId);
+
+  if(member.role === "manager") {
+    const managerCount = await countManagers(teamId);
+    if(managerCount <= 1) throw new Error("Cannot leave team as the only manager");
+  }
+
+  return removeMemberWithEmptyTeamCleanup(teamId, userId);
 };

@@ -33,7 +33,10 @@ export const createProject = async (req: Request, res: Response) => {
 };
 
 export const getProjectById = async (req: Request, res: Response) => {
-  return handleResponse(res, 200, { project: req.project });
+  return handleResponse(res, 200, {
+    project: req.project,
+    callerRole: req.callerMembership?.role,
+  });
 };
 
 export const updateProject = async (req: Request, res: Response) => {

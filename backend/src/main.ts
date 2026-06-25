@@ -2,6 +2,7 @@ import { getFirebaseApp } from "./lib/firebase";
 import { connectDB } from "./lib/db";
 import { getOpenAI } from "./lib/openai";
 import { getRedis } from "./lib/redis";
+import { getBrevo } from "./lib/brevo";
 import env from "./lib/env";
 import { createApp } from "./app";
 
@@ -10,6 +11,7 @@ const bootstrap = async (): Promise<void> => {
   await getRedis();
   getFirebaseApp();
   getOpenAI();
+  getBrevo();
 
   const app = createApp();
   app.listen(env.port, () => console.log(`Server listening on http://localhost:${env.port}`));

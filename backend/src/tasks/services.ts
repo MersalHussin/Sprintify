@@ -1,18 +1,52 @@
-import { Task } from "../models/task";
+import type { Types } from "mongoose";
+
+import { Task, type TaskDocument } from "../models/task";
 import { TaskComment } from "../models/task-comment";
 import type { ProjectDocument } from "../models/project";
 import { TeamMembership } from "../models/team-memberships";
-import { assertTaskMember } from "../lib/task-access";
+import { assertTaskManagerOrAssignee, assertTaskMember } from "../lib/task-access";
+import { getUsersByUids, toAuthUser } from "../lib/users";
 import { buildPaginatedResult, type PaginationParams } from "../lib/pagination";
 import { omitKeys } from "../types/api";
 import type {
   CommentInput,
   SubtaskInput,
   TaskCreateInput,
+  TaskReorderEntry,
+  TaskStatus,
   TaskUpdateInput,
 } from "../types/task";
 
+const TASK_LIST_SORT = { order: 1 as const, createdAt: 1 as const };
 const PROTECTED_TASK_KEYS = ["projectId", "teamId", "createdBy"] as const;
+const ASSIGNEE_WRITABLE_TASK_KEYS = new Set(["status", "subtasks"]);
+
+async function nextTaskOrder(projectId: Types.ObjectId, status: TaskStatus) {
+  const last = await Task.findOne({ projectId, status }).sort({ order: -1 }).select("order");
+  return (last?.order ?? -1) + 1;
+}
+
+
+function toPlainTask<T extends { _id: Types.ObjectId }>(task: T) {
+  const doc = task as T & { toObject?: () => T };
+  return typeof doc.toObject === "function" ? doc.toObject() : task;
+}
+
+export async function attachCommentCounts<T extends { _id: Types.ObjectId }>(tasks: T[]) {
+  if(tasks.length === 0) return tasks;
+
+  const taskIds = tasks.map((task) => task._id);
+  const counts = await TaskComment.aggregate<{ _id: Types.ObjectId; count: number }>([
+    { $match: { taskId: { $in: taskIds } } },
+    { $group: { _id: "$taskId", count: { $sum: 1 } } },
+  ]);
+  const countByTaskId = new Map(counts.map(({ _id, count }) => [_id.toString(), count]));
+
+  return tasks.map((task) => ({
+    ...toPlainTask(task),
+    commentCount: countByTaskId.get(task._id.toString()) ?? 0,
+  }));
+}
 
 type SubtaskPositionalUpdate = {
   "subtasks.$.name"?: string;
@@ -25,13 +59,19 @@ export const getTasksByProjectIdService = async (
   pagination: PaginationParams | null = null,
 ) => {
   const filter = { projectId };
-  if(!pagination) return Task.find(filter);
+  if(!pagination) {
+    return attachCommentCounts(await Task.find(filter).sort(TASK_LIST_SORT));
+  }
 
   const [items, total] = await Promise.all([
-    Task.find(filter).skip(pagination.skip).limit(pagination.limit),
+    Task.find(filter).sort(TASK_LIST_SORT).skip(pagination.skip).limit(pagination.limit),
     Task.countDocuments(filter),
   ]);
-  return buildPaginatedResult(items, total, pagination);
+  const paginated = buildPaginatedResult(items, total, pagination);
+  return {
+    ...paginated,
+    items: await attachCommentCounts(paginated.items as TaskDocument[]),
+  };
 };
 
 export const getTaskByIdService = async (taskId: string, userId: string) => {
@@ -45,7 +85,17 @@ export const getTaskByIdService = async (taskId: string, userId: string) => {
   ]);
   if(!isMember) throw new Error("Task not found");
 
-  return { task, comments };
+  const userIds = [
+    task.createdBy,
+    ...task.assignees,
+    ...comments.map((comment) => comment.author),
+  ];
+  const usersByUid = await getUsersByUids(userIds);
+  const users = Object.fromEntries(
+    [...usersByUid.entries()].map(([uid, user]) => [uid, toAuthUser(user)]),
+  );
+
+  return { task, comments, users };
 };
 
 // Task-related services
@@ -54,18 +104,44 @@ export const createTaskService = async (
   project: ProjectDocument,
   task: TaskCreateInput,
 ) => {
+  const status = task.status ?? "Backlog";
+  const order = task.order ?? await nextTaskOrder(project._id, status);
+
   return Task.create({
     ...task,
+    status,
+    order,
     projectId: project._id,
     teamId: project.teamId,
     createdBy: userId,
   });
 };
 
+export const reorderProjectTasksService = async (
+  projectId: Types.ObjectId,
+  updates: TaskReorderEntry[],
+) => {
+  if(updates.length === 0) return;
+
+  await Task.bulkWrite(
+    updates.map(({ taskId, status, order }) => ({
+      updateOne: {
+        filter: { _id: taskId, projectId },
+        update: { $set: { status, order } },
+      },
+    })),
+  );
+};
+
 export const updateTaskService = async (taskId: string, userId: string, task: TaskUpdateInput) => {
-  await assertTaskMember(taskId, userId);
+  const { isManager } = await assertTaskManagerOrAssignee(taskId, userId);
 
   const fields = omitKeys({ ...task } as Record<string, unknown>, PROTECTED_TASK_KEYS);
+  if(!isManager) {
+    const disallowed = Object.keys(fields).filter((key) => !ASSIGNEE_WRITABLE_TASK_KEYS.has(key));
+    if(disallowed.length > 0) throw new Error("Forbidden");
+  }
+
   const updated = await Task.findByIdAndUpdate(taskId, fields, { new: true, runValidators: true });
   if(!updated) throw new Error("Task not found");
 
@@ -81,7 +157,7 @@ export const deleteTaskService = async (taskId: string, userId: string) => {
 
 // Subtask-related services
 export const createSubtaskService = async (taskId: string, userId: string, subtask: SubtaskInput) => {
-  await assertTaskMember(taskId, userId);
+  await assertTaskManagerOrAssignee(taskId, userId);
 
   const updated = await Task.findByIdAndUpdate(
     taskId,
@@ -98,7 +174,7 @@ export const updateSubtaskService = async (
   userId: string,
   subtask: SubtaskInput,
 ) => {
-  await assertTaskMember(taskId, userId);
+  await assertTaskManagerOrAssignee(taskId, userId);
 
   const update: SubtaskPositionalUpdate = {};
   if(subtask.name !== undefined) update["subtasks.$.name"] = subtask.name;
@@ -119,7 +195,7 @@ export const updateSubtaskService = async (
 };
 
 export const deleteSubtaskService = async (taskId: string, subtaskId: string, userId: string) => {
-  await assertTaskMember(taskId, userId);
+  await assertTaskManagerOrAssignee(taskId, userId);
 
   const updated = await Task.findByIdAndUpdate(
     taskId,

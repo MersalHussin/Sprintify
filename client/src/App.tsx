@@ -8,17 +8,21 @@ import { ContactModal } from "@/components/ui/contact-modal";
 const Home = lazy(() => import("./components/pages/home"));
 const Login = lazy(() => import("./components/pages/login"));
 const Register = lazy(() => import("./components/pages/register"));
-const Onboarding = lazy(() => import("./components/pages/onboarding"));
+const AcceptInvite = lazy(() => import("./components/pages/accept-invite"));
 const Dashboard = lazy(() => import("./components/pages/dashboard"));
 const Terms = lazy(() => import("./components/pages/terms"));
 const NotFound = lazy(() => import("./components/pages/not-found"));
 const AI = lazy(() => import("./components/pages/ai"));
 const Kanban = lazy(() => import("./components/kanban/kanban"));
 const Settings = lazy(() => import("./components/pages/settings"));
+const MyTasks = lazy(() => import("./components/pages/my-tasks"));
 const Boards = lazy(() => import("./components/pages/boards.tsx"));
+const Onboarding = lazy(() => import("./components/pages/onboarding.tsx"));
 import Layout from "./components/layout/Layout";
 import Workspaces from "./components/kanban/Workspaces";
 import Board from "./components/kanban/Board";
+import Backlog from "./components/kanban/Backlog";
+import TeamMembers from "./components/pages/team-members";
 
 import { ProtectedRoute, PublicRoute } from "@/components/auth";
 
@@ -51,14 +55,19 @@ function App() {
 
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
+                  <Route path="/invite" element={<AcceptInvite />} />
                   <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/board/:boardId" element={<Board />} />
-                  
+
                   {/* Routes Wrapped in Layout Sidebar */}
                   <Route element={<Layout />}>
+                    <Route path="/board/:boardId" element={<Board />} />
+                    <Route path="/backlog/:boardId" element={<Backlog />} />
                     <Route path="/workspaces" element={<Workspaces />} />
+                    <Route path="/teams/:teamId/projects" element={<Workspaces />} />
+                    <Route path="/teams/:teamId/members" element={<TeamMembers />} />
                     <Route path="/kanban" element={<Kanban />} />
                     <Route path="/dashboard" element={<AI />} />
+                    <Route path="/my-tasks" element={<MyTasks />} />
                     <Route path="/boards" element={<Boards />} />
                     <Route path="/settings" element={<Settings />} />
                   </Route>

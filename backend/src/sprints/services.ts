@@ -39,7 +39,6 @@ export const updateSprintService = async (sprint: SprintDocument, data: SprintUp
 };
 
 export const deleteSprintService = async (sprintId: Types.ObjectId) => {
-  // Covered by sparse { sprintId: 1 } index on Task.
   await Task.updateMany({ sprintId }, { $unset: { sprintId: 1 } });
   const result = await Sprint.deleteOne({ _id: sprintId });
   if(result.deletedCount === 0) throw new Error("Sprint not found");

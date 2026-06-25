@@ -2,7 +2,12 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "../lib/async-handler";
 import { handleResponse } from "../lib/response-handler";
-import { chatService, getChatHistoryService, taskGenerationService } from "./services";
+import {
+  approveGeneratedTasksService,
+  chatService,
+  getChatHistoryService,
+  taskGenerationService,
+} from "./services";
 
 const MAX_AI_MESSAGE_LENGTH = 4000;
 
@@ -13,7 +18,7 @@ function validateAiMessage(message: unknown): message is string {
 export const chat = asyncHandler(async (req: Request, res: Response) => {
   const { message, sessionId: sessionIdParam } = req.body;
   if(!validateAiMessage(message)) {
-    return handleResponse(res, 400, undefined, "Message must be 1–4000 characters");
+    return handleResponse(res, 400, undefined, "Message must be 1-4000 characters");
   }
 
   const { sessionId, response } = await chatService(
@@ -33,7 +38,7 @@ export const chat = asyncHandler(async (req: Request, res: Response) => {
 export const taskGeneration = asyncHandler(async (req: Request, res: Response) => {
   const { message } = req.body;
   if(!validateAiMessage(message)) {
-    return handleResponse(res, 400, undefined, "Message must be 1–4000 characters");
+    return handleResponse(res, 400, undefined, "Message must be 1-4000 characters");
   }
 
   const tasks = await taskGenerationService(
@@ -48,6 +53,21 @@ export const taskGeneration = asyncHandler(async (req: Request, res: Response) =
     message,
   );
   return handleResponse(res, 200, { tasks });
+});
+
+export const approveGeneratedTasks = asyncHandler(async (req: Request, res: Response) => {
+  const { indices } = req.body as { indices?: number[] };
+  if(indices !== undefined && !Array.isArray(indices)) {
+    return handleResponse(res, 400, undefined, "indices must be an array of numbers");
+  }
+
+  const result = await approveGeneratedTasksService(
+    req.user!.id,
+    req.project!,
+    req.project!._id.toString(),
+    indices,
+  );
+  return handleResponse(res, 201, result);
 });
 
 export const getChatHistory = asyncHandler(async (req: Request, res: Response) => {

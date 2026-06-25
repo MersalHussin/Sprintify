@@ -10,6 +10,8 @@ import {
   deleteTeam,
   getTeamById,
   joinTeamByInvitationCode,
+  kickTeamMember,
+  leaveTeam,
   listTeamInvitations,
   listUserTeams,
   updateTeam,
@@ -29,9 +31,11 @@ router.post("/:teamId/projects", validateObjectId("teamId"), resolveTeam, requir
 router.get("/:teamId", validateObjectId("teamId"), resolveTeam, getTeamById);
 router.patch("/:teamId", validateObjectId("teamId"), resolveTeam, updateTeam);
 router.delete("/:teamId", validateObjectId("teamId"), resolveTeam, deleteTeam);
+router.post("/:teamId/leave", validateObjectId("teamId"), resolveTeam, leaveTeam);
 router.post("/:teamId/invitations", validateObjectId("teamId"), requireTeamRole("manager"), resolveTeam, createTeamInvitation);
 router.get("/:teamId/invitations", validateObjectId("teamId"), resolveTeam, listTeamInvitations);
 router.delete("/:teamId/invitations/:invitationToken", validateObjectId("teamId"), requireTeamRole("manager"), resolveTeam, deleteInvitation);
 router.patch("/:teamId/members/:userId", validateObjectId("teamId"), requireTeamRole("manager"), resolveTeam, updateTeamMemberRole);
+router.delete("/:teamId/members/:userId", validateObjectId("teamId"), requireTeamRole("manager"), resolveTeam, kickTeamMember);
 
 export default router;

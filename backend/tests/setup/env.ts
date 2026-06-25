@@ -7,3 +7,6 @@ process.env.AI_CHAT_MODEL = "test-chat-model";
 process.env.AI_TASK_MODEL = "test-task-model";
 process.env.REDIS_URL = "redis://127.0.0.1:6379";
 process.env.FRONTEND_URL = "http://localhost:3000/";
+process.env.BREVO_API_KEY = "test-brevo-key";
+process.env.BREVO_FROM_EMAIL = "sender@sprintify.test";
+process.env.BREVO_FROM_NAME = "Sprintify";

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 import { DesktopNav } from "./desktop-nav";
 import { Logo } from "./logo";
@@ -19,9 +20,14 @@ export type NavbarProps = {
   readonly onGetStarted?: () => void;
 };
 
-function Navbar({ variant = "default", user, onGetStarted }: NavbarProps) {
+function Navbar({ variant: variantProp = "default", user, onGetStarted }: NavbarProps) {
+  const { user: authUser, loading } = useAuth();
   const [scrolled, setScrolled] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
+
+  const isAuthenticated = !loading && Boolean(authUser);
+  const variant: NavbarVariant =
+    variantProp === "logged-in" || isAuthenticated ? "logged-in" : "default";
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);

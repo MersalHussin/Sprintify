@@ -28,10 +28,15 @@ const RequiredMark = () => (
 
 export type PersonalInfoStepProps = {
   readonly defaultValues: PersonalInfoFormValues;
-  readonly onSubmit: (values: PersonalInfoFormValues) => void;
+  readonly isSubmitting?: boolean;
+  readonly onSubmit: (values: PersonalInfoFormValues) => void | Promise<void>;
 };
 
-function PersonalInfoStep({ defaultValues, onSubmit }: PersonalInfoStepProps) {
+function PersonalInfoStep({
+  defaultValues,
+  isSubmitting = false,
+  onSubmit,
+}: PersonalInfoStepProps) {
   const {
     register,
     handleSubmit,
@@ -206,10 +211,13 @@ function PersonalInfoStep({ defaultValues, onSubmit }: PersonalInfoStepProps) {
         <Button
           type="submit"
           size="lg"
+          disabled={isSubmitting}
           className="w-full max-w-[284px] rounded-full font-sans font-medium"
         >
-          Next step
-          <ArrowRight data-icon="inline-end" aria-hidden="true" />
+          {isSubmitting ? "Saving..." : "Next step"}
+          {!isSubmitting ? (
+            <ArrowRight data-icon="inline-end" aria-hidden="true" />
+          ) : null}
         </Button>
       </form>
     </div>

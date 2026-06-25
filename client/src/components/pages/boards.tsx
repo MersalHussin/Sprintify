@@ -1,27 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   Plus,
   LogOut,
   LayoutDashboard,
   MoreHorizontal,
-  GripVertical,
   Calendar,
   MessageSquare,
   CheckCircle2,
   Clock,
   AlertCircle,
-  ArrowLeft,
+  ListTodo,
+  Eye,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth-context";
+import { useSetPageTitle } from "@/context/page-title-context";
+import { apiFetch } from "@/lib/api";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
 type Priority = "low" | "medium" | "high";
+
+interface ApiTask {
+  _id: string;
+  name: string;
+  title?: string;
+  description?: string;
+  priority?: string;
+  status: string;
+  category?: string;
+}
 
 interface Card {
   id: string;
@@ -40,87 +54,62 @@ interface Column {
   cards: Card[];
 }
 
-/* ------------------------------------------------------------------ */
-/*  Demo Data                                                          */
-/* ------------------------------------------------------------------ */
-
-const INITIAL_COLUMNS: Column[] = [
+const STATUS_COLUMNS: Omit<Column, "cards">[] = [
   {
-    id: "todo",
+    id: "Backlog",
+    title: "Backlog",
+    icon: <ListTodo className="size-4" />,
+    color: "bg-slate-500/15 text-slate-700",
+  },
+  {
+    id: "To Do",
     title: "To Do",
     icon: <AlertCircle className="size-4" />,
     color: "bg-blue-500/15 text-blue-700",
-    cards: [
-      {
-        id: "1",
-        title: "Design sprint planning template",
-        description: "Create reusable templates for sprint planning sessions",
-        priority: "high",
-        comments: 3,
-        dueDate: "Jun 25",
-      },
-      {
-        id: "2",
-        title: "Set up CI/CD pipeline",
-        priority: "medium",
-        comments: 1,
-        dueDate: "Jun 28",
-      },
-      {
-        id: "3",
-        title: "Write API documentation",
-        description: "Document all REST endpoints for the team API",
-        priority: "low",
-        comments: 0,
-      },
-    ],
   },
   {
-    id: "in-progress",
+    id: "In Progress",
     title: "In Progress",
     icon: <Clock className="size-4" />,
     color: "bg-amber-500/15 text-amber-700",
-    cards: [
-      {
-        id: "4",
-        title: "Implement user authentication",
-        description: "Firebase email/password + Google OAuth",
-        priority: "high",
-        comments: 5,
-        dueDate: "Jun 22",
-      },
-      {
-        id: "5",
-        title: "Build notification system",
-        priority: "medium",
-        comments: 2,
-      },
-    ],
   },
   {
-    id: "done",
+    id: "Review",
+    title: "Review",
+    icon: <Eye className="size-4" />,
+    color: "bg-purple-500/15 text-purple-700",
+  },
+  {
+    id: "Done",
     title: "Done",
     icon: <CheckCircle2 className="size-4" />,
     color: "bg-emerald-500/15 text-emerald-700",
-    cards: [
-      {
-        id: "6",
-        title: "Project setup & configuration",
-        description: "Initialize repo, Vite, Tailwind, ESLint",
-        priority: "low",
-        comments: 0,
-        dueDate: "Jun 18",
-      },
-      {
-        id: "7",
-        title: "Design system tokens",
-        priority: "medium",
-        comments: 4,
-        dueDate: "Jun 19",
-      },
-    ],
   },
 ];
+
+function mapPriority(priority?: string): Priority {
+  const normalized = priority?.toLowerCase() ?? "medium";
+  if (normalized === "urgent" || normalized === "high") return "high";
+  if (normalized === "low") return "low";
+  return "medium";
+}
+
+function taskToCard(task: ApiTask): Card {
+  return {
+    id: task._id,
+    title: task.name || task.title || "Untitled",
+    description: task.description,
+    priority: mapPriority(task.priority),
+    comments: 0,
+  };
+}
+
+function buildColumns(tasks: ApiTask[]): Column[] {
+  return STATUS_COLUMNS.map((col) => ({
+    ...col,
+    cards: tasks.filter((t) => t.status === col.id).map(taskToCard),
+  }));
+}
 
 /* ------------------------------------------------------------------ */
 /*  Priority Badge                                                     */
@@ -146,15 +135,22 @@ function PriorityBadge({ priority }: { priority: Priority }) {
 /*  Card Component                                                     */
 /* ------------------------------------------------------------------ */
 
-function KanbanCard({ card }: { card: Card }) {
+function KanbanCard({
+  card,
+  onDelete,
+}: {
+  card: Card;
+  onDelete: (cardId: string) => void;
+}) {
   return (
     <div className="group cursor-pointer rounded-xl border border-border/60 bg-card p-4 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md">
       <div className="mb-3 flex items-start justify-between gap-2">
         <PriorityBadge priority={card.priority} />
         <button
           type="button"
-          className="rounded-md p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
-          aria-label="Card options"
+          onClick={() => onDelete(card.id)}
+          className="rounded-md p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted hover:text-destructive group-hover:opacity-100"
+          aria-label="Delete card"
         >
           <MoreHorizontal className="size-4" />
         </button>
@@ -195,13 +191,14 @@ function KanbanCard({ card }: { card: Card }) {
 function KanbanColumn({
   column,
   onAddCard,
+  onDeleteCard,
 }: {
   column: Column;
   onAddCard: (columnId: string) => void;
+  onDeleteCard: (cardId: string) => void;
 }) {
   return (
     <div className="flex w-80 shrink-0 flex-col rounded-2xl bg-muted/40 border border-border/40">
-      {/* Column header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-sans text-xs font-semibold ${column.color}`}>
@@ -212,23 +209,14 @@ function KanbanColumn({
             {column.cards.length}
           </span>
         </div>
-        <button
-          type="button"
-          className="rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Column options"
-        >
-          <MoreHorizontal className="size-4" />
-        </button>
       </div>
 
-      {/* Cards */}
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-3 py-2" style={{ maxHeight: "calc(100vh - 220px)" }}>
         {column.cards.map((card) => (
-          <KanbanCard key={card.id} card={card} />
+          <KanbanCard key={card.id} card={card} onDelete={onDeleteCard} />
         ))}
       </div>
 
-      {/* Add card button */}
       <div className="px-3 pb-3 pt-1">
         <button
           type="button"
@@ -244,48 +232,150 @@ function KanbanColumn({
 }
 
 /* ------------------------------------------------------------------ */
-/*  WorkspaceBoard Page                                                */
+/*  Boards Page                                                        */
 /* ------------------------------------------------------------------ */
 
-interface WorkspaceBoardProps {
-  boardId?: string | number;
-  boardTitle?: string;
-  onBack?: () => void;
+function BoardsPageSkeleton() {
+  return (
+    <div className="flex flex-1 gap-5 overflow-x-auto p-5 sm:p-6">
+      {STATUS_COLUMNS.map((column) => (
+        <div
+          key={column.id}
+          className="flex w-80 shrink-0 flex-col rounded-2xl bg-muted/40 border border-border/40"
+        >
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-28 rounded-lg" />
+              <Skeleton className="size-5 rounded-full" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2.5 px-3 py-2">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-24 rounded-xl" />
+          </div>
+          <div className="px-3 pb-3 pt-1">
+            <Skeleton className="h-10 w-full rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
-const WorkspaceBoard = ({ boardTitle, onBack }: WorkspaceBoardProps) => {
+const Boards = () => {
   const { user, logOut } = useAuth();
   const navigate = useNavigate();
-  const [columns, setColumns] = useState<Column[]>(INITIAL_COLUMNS);
+  const [tasks, setTasks] = useState<ApiTask[]>([]);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("My Board");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
+  const columns = useMemo(() => buildColumns(tasks), [tasks]);
   const displayName = user?.displayName || user?.email?.split("@")[0] || "there";
+
+  useSetPageTitle(loading ? undefined : projectName);
+
+  useEffect(() => {
+    async function loadBoard() {
+      try {
+        setLoading(true);
+        setLoadError(null);
+
+        const teamsRes = await apiFetch("/teams");
+        const teams = teamsRes?.teams || [];
+
+        if (teams.length === 0) {
+          setProjectId(null);
+          setProjectName("No boards yet");
+          setTasks([]);
+          return;
+        }
+
+        const teamId = teams[0]._id;
+        const projectsRes = await apiFetch(`/teams/${teamId}/projects`);
+        const projects = projectsRes?.projects || projectsRes?.items || [];
+
+        if (projects.length === 0) {
+          setProjectId(null);
+          setProjectName("No boards yet");
+          setTasks([]);
+          return;
+        }
+
+        const project = projects[0];
+        setProjectId(project._id);
+        setProjectName(project.name);
+
+        const tasksData = await apiFetch(`/projects/${project._id}/tasks`);
+        setTasks(tasksData?.tasks || tasksData?.items || []);
+      } catch (error) {
+        console.error("Error loading board:", error);
+        setLoadError("Failed to load board data");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBoard();
+  }, []);
 
   const handleLogout = async () => {
     await logOut();
     navigate("/");
   };
 
-  const handleAddCard = (columnId: string) => {
-    const newCard: Card = {
-      id: Date.now().toString(),
-      title: "New task",
-      priority: "medium",
-      comments: 0,
-    };
+  const handleAddCard = async (columnId: string) => {
+    if (!projectId) return;
 
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col,
-      ),
-    );
+    const { value: taskName } = await Swal.fire({
+      title: "Add New Task",
+      input: "text",
+      inputPlaceholder: "What needs to be done?",
+      showCancelButton: true,
+      confirmButtonColor: "#1d4ed8",
+      confirmButtonText: "Add",
+    });
+
+    if (!taskName?.trim()) return;
+
+    try {
+      const res = await apiFetch(`/projects/${projectId}/tasks`, {
+        method: "POST",
+        body: JSON.stringify({ name: taskName.trim(), status: columnId }),
+      });
+      if (res?.task) {
+        setTasks((prev) => [...prev, res.task]);
+      }
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+
+  const handleDeleteCard = async (taskId: string) => {
+    const result = await Swal.fire({
+      title: "Delete task?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Delete",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiFetch(`/tasks/${taskId}`, { method: "DELETE" });
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   return (
     <div className="flex min-h-svh flex-col bg-background">
-      {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-          {/* Left side */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5">
               <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -297,19 +387,8 @@ const WorkspaceBoard = ({ boardTitle, onBack }: WorkspaceBoardProps) => {
             </div>
 
             <div className="hidden h-6 w-px bg-border sm:block" />
-
-            {onBack && (
-              <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
-                <ArrowLeft className="size-4 mr-1" /> Back
-              </Button>
-            )}
-
-            <h1 className="hidden font-sans text-sm font-medium text-muted-foreground sm:block">
-              {boardTitle || "My Board"}
-            </h1>
           </div>
 
-          {/* Right side */}
           <div className="flex items-center gap-3">
             <span className="hidden font-sans text-sm text-foreground sm:block">
               Hello,{" "}
@@ -341,29 +420,33 @@ const WorkspaceBoard = ({ boardTitle, onBack }: WorkspaceBoardProps) => {
         </div>
       </header>
 
-      {/* Board area */}
-      <main className="flex flex-1 gap-5 overflow-x-auto p-5 sm:p-6">
-        {columns.map((column) => (
-          <KanbanColumn
-            key={column.id}
-            column={column}
-            onAddCard={handleAddCard}
-          />
-        ))}
-
-        {/* Add column button */}
-        <div className="flex w-80 shrink-0 items-start">
-          <button
-            type="button"
-            className="flex w-full items-center gap-2 rounded-2xl border-2 border-dashed border-border/50 px-4 py-4 font-sans text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-          >
-            <Plus className="size-5" />
-            Add another list
-          </button>
-        </div>
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {loading ? (
+          <BoardsPageSkeleton />
+        ) : loadError ? (
+          <p className="p-5 font-sans text-sm text-destructive sm:p-6">{loadError}</p>
+        ) : !projectId ? (
+          <div className="flex flex-col items-start gap-4 p-5 sm:p-6">
+            <p className="font-sans text-sm text-muted-foreground">
+              No projects found. Create a board from Workspaces to get started.
+            </p>
+            <Button onClick={() => navigate("/workspaces")}>Go to Workspaces</Button>
+          </div>
+        ) : (
+          <div className="flex flex-1 gap-5 overflow-x-auto p-5 sm:p-6">
+            {columns.map((column) => (
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                onAddCard={handleAddCard}
+                onDeleteCard={handleDeleteCard}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
-export default WorkspaceBoard;
+export default Boards;

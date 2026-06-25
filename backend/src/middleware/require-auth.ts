@@ -3,6 +3,10 @@ import { bearerToken, verifyToken } from "../lib/auth";
 import { handleResponse } from "../lib/response-handler";
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+    if (req.method === "OPTIONS") {
+        return next();
+    }
+
     const token = bearerToken(req);
     
     if(!token) return handleResponse(res, 401);

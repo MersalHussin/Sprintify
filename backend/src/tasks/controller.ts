@@ -3,7 +3,9 @@ import type { Request, Response } from "express";
 import { handleResponse } from "../lib/response-handler";
 import { sendRouteError } from "../middleware/error-handler";
 import { parseOptionalPagination } from "../lib/pagination";
+import { STATUSES } from "../models/task";
 import { isRecord } from "../types/api";
+import type { TaskReorderEntry, TaskStatus } from "../types/task";
 import {
   createCommentService,
   createSubtaskService,
@@ -14,6 +16,7 @@ import {
   editCommentService,
   getTaskByIdService,
   getTasksByProjectIdService,
+  reorderProjectTasksService,
   updateSubtaskService,
   updateTaskService,
 } from "./services";
@@ -36,7 +39,10 @@ export const getTaskById = async (req: Request, res: Response) => {
 
   try {
     const result = await getTaskByIdService(taskId, req.user!.id);
-    return handleResponse(res, 200, result);
+    return handleResponse(res, 200, {
+      ...result,
+      callerRole: req.callerMembership?.role,
+    });
   } catch (error) {
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
@@ -54,6 +60,35 @@ export const createTask = async (req: Request, res: Response) => {
   }
 };
 
+export const reorderProjectTasks = async (req: Request, res: Response) => {
+  const rawTasks = req.body?.tasks;
+  if(!Array.isArray(rawTasks) || rawTasks.length === 0) {
+    return handleResponse(res, 400, undefined, "tasks array is required");
+  }
+
+  const updates: TaskReorderEntry[] = rawTasks.filter(
+    (entry): entry is TaskReorderEntry =>
+      isRecord(entry)
+      && typeof entry.taskId === "string"
+      && typeof entry.status === "string"
+      && STATUSES.includes(entry.status as TaskStatus)
+      && typeof entry.order === "number"
+      && entry.order >= 0,
+  );
+
+  if(updates.length !== rawTasks.length) {
+    return handleResponse(res, 400, undefined, "Each task entry requires taskId, status, and order");
+  }
+
+  try {
+    await reorderProjectTasksService(req.project!._id, updates);
+    return handleResponse(res, 200, undefined, "Tasks reordered successfully");
+  } catch (error) {
+    console.error(error as Error);
+    return handleResponse(res, 500, undefined, "An unexpected error occurred");
+  }
+};
+
 export const updateTask = async (req: Request, res: Response) => {
   const taskId = req.params.taskId as string;
   if(!taskId) return handleResponse(res, 400, undefined, "Task ID is required");
@@ -62,6 +97,7 @@ export const updateTask = async (req: Request, res: Response) => {
     const task = await updateTaskService(taskId, req.user!.id, req.body);
     return handleResponse(res, 200, { task });
   } catch (error) {
+    if(sendRouteError(res, error)) return;
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }

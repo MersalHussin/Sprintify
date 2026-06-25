@@ -1,5 +1,10 @@
+packages:
+  - backend
+  - client
+
 allowBuilds:
   '@firebase/util': true
-  esbuild: set this to true or false
+  esbuild: true
   mongodb-memory-server: true
+  msw: true
   protobufjs: true

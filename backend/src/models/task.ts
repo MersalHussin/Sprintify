@@ -36,15 +36,15 @@ const taskSchema = new Schema(
         projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
         teamId: { type: Schema.Types.ObjectId, ref: "Team", required: true },
         sprintId: { type: Schema.Types.ObjectId, ref: "Sprint" },
+        order: { type: Number, default: 0 },
         createdBy: { type: String, ref: "User", required: true }
     }, { timestamps: true }
 );
 
 taskSchema.index({ projectId: 1, sprintId: 1 });
-taskSchema.index({ projectId: 1, status: 1 });
+taskSchema.index({ projectId: 1, status: 1, order: 1 });
 taskSchema.index({ teamId: 1 });
 taskSchema.index({ assignees: 1 });
-// Sparse index: sprint delete runs updateMany({ sprintId }); without this, MongoDB scans by projectId.
 taskSchema.index({ sprintId: 1 }, { sparse: true });
 
 export type TaskDocument = InferSchemaType<typeof taskSchema> & {

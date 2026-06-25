@@ -1,118 +1,297 @@
-import React from 'react';
-import { NavLink } from 'react-router';
-import { 
-  FaChartPie, 
-  FaPersonRunning, 
-  FaList, 
-  FaUsers, 
-  FaGear, 
-  FaHeadset, 
-  FaPlus,
-  FaDiagramProject,
-  FaTable,
-  FaArrowRightFromBracket,
-  FaWandMagicSparkles,
-  FaLayerGroup,
-  FaSliders
-} from 'react-icons/fa6';
-import { useContactModal } from '@/context/contact-modal-context';
-import { useAuth } from '@/context/auth-context';
-import { useNavigate } from 'react-router';
+import { useEffect, useState } from "react"
+import { Link, useLocation, useParams } from "react-router"
+import {
+  ChevronRight,
+  CircleHelp,
+  ClipboardList,
+  FolderKanban,
+  LayoutDashboard,
+  ListTodo,
+  Settings,
+  Sparkles,
+  Users,
+} from "lucide-react"
 
-const SIDEBAR_LINKS = [
-  { title: 'Build with AI', path: '/dashboard', icon: FaWandMagicSparkles },
-  { title: 'Workspaces', path: '/workspaces', icon: FaLayerGroup },
-  { title: 'Settings', path: '/settings', icon: FaSliders },
-];
+import { useContactModal } from "@/context/contact-modal-context"
+import { apiFetch } from "@/lib/api"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarSeparator,
+} from "@/components/ui/sidebar"
 
-export default function Sidebar() {
-  const { open: openContact } = useContactModal();
-  const { user, logOut } = useAuth();
-  const navigate = useNavigate();
+interface Team {
+  _id: string
+  name: string
+}
 
-  const handleLogout = async () => {
-    try {
-      await logOut();
-      navigate('/login');
-    } catch (error) {
-      console.error("Failed to log out", error);
+interface Project {
+  _id: string
+  name: string
+}
+
+export default function AppSidebar() {
+  const { open: openContact } = useContactModal()
+  const location = useLocation()
+  const { boardId, teamId: routeTeamId } = useParams()
+  const [teams, setTeams] = useState<Team[]>([])
+  const [currentProject, setCurrentProject] = useState<Project | null>(null)
+  const [isProjectManager, setIsProjectManager] = useState(false)
+  const [projectOpen, setProjectOpen] = useState(true)
+  const [openTeams, setOpenTeams] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    async function loadSidebarData() {
+      try {
+        const teamsRes = await apiFetch("/teams")
+        const loadedTeams: Team[] = teamsRes?.teams || []
+        setTeams(loadedTeams)
+
+        const activeProjectId = boardId
+        if (activeProjectId) {
+          const projectRes = await apiFetch(`/projects/${activeProjectId}`)
+          if (projectRes?.project) {
+            setCurrentProject(projectRes.project)
+            setIsProjectManager(projectRes.callerRole === "manager")
+            return
+          }
+        }
+
+        const teamId = loadedTeams[0]?._id
+        if (!teamId) {
+          setIsProjectManager(false)
+          return
+        }
+
+        const projectsRes = await apiFetch(`/teams/${teamId}/projects`)
+        const projects: Project[] = projectsRes?.projects || projectsRes?.items || []
+        const fallbackProject = projects[0] ?? null
+        setCurrentProject(fallbackProject)
+
+        if (fallbackProject) {
+          const projectRes = await apiFetch(`/projects/${fallbackProject._id}`)
+          setIsProjectManager(projectRes?.callerRole === "manager")
+        } else {
+          setIsProjectManager(false)
+        }
+      } catch (error) {
+        console.error("Failed to load sidebar data", error)
+      }
     }
-  };
+
+    loadSidebarData()
+  }, [boardId])
+
+  useEffect(() => {
+    if (!routeTeamId) return
+    setOpenTeams((prev) => ({ ...prev, [routeTeamId]: true }))
+  }, [routeTeamId])
+
+  const teamProjectsPath = (teamId: string) => `/teams/${teamId}/projects`
+  const teamMembersPath = (teamId: string) => `/teams/${teamId}/members`
+
+  const isTeamProjectsRoute = (teamId: string) =>
+    location.pathname === teamProjectsPath(teamId) ||
+    (location.pathname === "/workspaces" && teams[0]?._id === teamId && !routeTeamId)
+
+  const isTeamMembersRoute = (teamId: string) =>
+    location.pathname === teamMembersPath(teamId)
+
+  const projectId = currentProject?._id
+  const boardPath = projectId ? `/board/${projectId}` : "/workspaces"
+  const backlogPath = projectId ? `/backlog/${projectId}` : "/workspaces"
+  const isBoardRoute = location.pathname.startsWith("/board/")
+  const isBacklogRoute = location.pathname.startsWith("/backlog/")
+  const isProjectRoute = isBoardRoute || isBacklogRoute
+  const isDashboard = location.pathname === "/dashboard"
+  const isMyTasks = location.pathname === "/my-tasks"
+  const isSettings = location.pathname === "/settings"
 
   return (
-    <aside className="w-64 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col flex-shrink-0 hidden md:flex transition-colors duration-200">
-      
-      {/* Logo Section */}
-      <div className="p-6">
-        <div className="flex items-center gap-3">
-          <img src="/assets/images/logo.webp" alt="Logo" className="w-35  rounded object-contain" />
-        </div>
-      </div>
+    <Sidebar>
+      <SidebarHeader>
+        <Link to="/workspaces" className="flex items-center gap-2 px-2 py-1">
+          <img
+            src="/assets/images/logo.webp"
+            alt="Sprintify"
+            className="h-7 w-auto rounded object-contain"
+          />
+        </Link>
+      </SidebarHeader>
 
-      {/* Navigation Links */}
-      <div className="flex-1 flex flex-col border-t border-gray-200 dark:border-slate-800 px-4 pt-6 pb-6 overflow-y-auto">
-        <div className="flex flex-col gap-2">
-          
-          {SIDEBAR_LINKS.map((link) => (
-            <NavLink 
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) => 
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
-                  isActive 
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' 
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 font-medium'
-                }`
-              }
-            >
-              <link.icon className="text-lg" />
-              <span>{link.title}</span>
-            </NavLink>
-          ))}
+      <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isMyTasks}>
+                  <Link to="/my-tasks">
+                    <ClipboardList className="text-sidebar-foreground/70" />
+                    <span>My Tasks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-          {/* Support Button (Triggers Contact Modal) */}
-          <button 
-            onClick={() => openContact()}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 font-medium w-full text-left"
-          >
-            <FaHeadset className="text-lg" />
-            <span>Support</span>
-          </button>
+      <SidebarContent>
+        <SidebarGroup>
+          <Collapsible open={projectOpen} onOpenChange={setProjectOpen}>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="group/label flex w-full items-center">
+                <span className="truncate">Current Project</span>
+                <ChevronRight className="ml-auto size-3.5 transition-transform group-data-[state=open]/label:rotate-90" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isProjectRoute} className="font-medium">
+                      <FolderKanban className="text-sidebar-foreground/70" />
+                      <span className="truncate">{currentProject?.name ?? "No project"}</span>
+                    </SidebarMenuButton>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={isBacklogRoute}>
+                          <Link to={backlogPath}>
+                            <ListTodo />
+                            <span>Backlog</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={isBoardRoute}>
+                          <Link to={boardPath}>
+                            <LayoutDashboard />
+                            <span>Sprint</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      {isProjectManager ? (
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton asChild isActive={isDashboard}>
+                            <Link to="/dashboard">
+                              <Sparkles />
+                              <span>Task Generation AI</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ) : null}
+                    </SidebarMenuSub>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarGroup>
 
-          {/* <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 mt-4 rounded-3xl transition-colors font-medium">
-            <FaPlus />
-            New Project
-          </button> */}
+        <SidebarSeparator />
 
-        </div>
-      </div>
+        <SidebarGroup>
+          <SidebarGroupLabel>Teams</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {teams.length === 0 ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton disabled>
+                    <Users />
+                    <span>No teams yet</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ) : (
+                teams.map((team) => {
+                  const teamOpen = openTeams[team._id] ?? false
+                  const teamActive =
+                    isTeamProjectsRoute(team._id) || isTeamMembersRoute(team._id)
 
-      {/* User Profile Footer */}
-      <div className="border-t border-gray-200 dark:border-slate-800 p-4">
-        <div 
-          onClick={handleLogout}
-          className="flex items-center justify-between p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors cursor-pointer group"
-          title="Click to logout"
-        >
-          <div className="flex items-center gap-3 overflow-hidden">
-            <img 
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.displayName || 'User'}`} 
-              alt="User Avatar" 
-              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 object-cover" 
-            />
-            <div className="flex flex-col overflow-hidden">
-              <span className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-red-600 truncate">
-                {user?.displayName || user?.email?.split('@')[0] || 'User'}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-red-400 truncate">
-                Logout
-              </span>
-            </div>
-          </div>
-          <FaArrowRightFromBracket className="text-gray-400 group-hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-      </div>
-      
-    </aside>
-  );
+                  return (
+                    <Collapsible
+                      key={team._id}
+                      className="group/collapsible"
+                      open={teamOpen}
+                      onOpenChange={(open) =>
+                        setOpenTeams((prev) => ({ ...prev, [team._id]: open }))
+                      }
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton isActive={teamActive}>
+                            <ChevronRight className="size-3.5 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                            <Users className="text-sidebar-foreground/70" />
+                            <span className="truncate">{team.name}</span>
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isTeamProjectsRoute(team._id)}
+                              >
+                                <Link to={teamProjectsPath(team._id)}>
+                                  <FolderKanban />
+                                  <span>Projects</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isTeamMembersRoute(team._id)}
+                              >
+                                <Link to={teamMembersPath(team._id)}>
+                                  <Users />
+                                  <span>Team members</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  )
+                })
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => openContact()}>
+              <CircleHelp />
+              <span>Support</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isSettings}>
+              <Link to="/settings">
+                <Settings />
+                <span>User Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  )
 }

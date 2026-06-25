@@ -1,8 +1,10 @@
 import React, { useState, useEffect, type MouseEvent } from 'react';
 import { FaPlus, FaTrash } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { apiFetch } from '../../lib/api';
+import { ensureDefaultWorkspaceTeam } from '@/lib/default-workspace';
+import { useSetPageTitle } from '@/context/page-title-context';
 
 // 1. تعريف شكل البورد اللي راجعة من السيرفر
 interface ProjectType {
@@ -12,32 +14,25 @@ interface ProjectType {
 
 export default function Workspaces() {
   const navigate = useNavigate();
+  const { teamId: routeTeamId } = useParams();
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
+  const [teamName, setTeamName] = useState<string>();
   const [loading, setLoading] = useState(true);
 
-  // جلب اللوحات من السيرفر
+  useSetPageTitle(teamName ? `${teamName} — Projects` : "Projects");
+
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        // 1. Get teams
-        let teamsRes = await apiFetch('/teams');
-        let teams = teamsRes?.teams || [];
-
-        // 2. If no teams, create a default one
-        if (teams.length === 0) {
-          const newTeamRes = await apiFetch('/teams', {
-            method: 'POST',
-            body: JSON.stringify({ name: 'My Workspace' })
-          });
-          teams = [newTeamRes.team];
-        }
-
-        const teamId = teams[0]._id;
+        const defaultTeam = await ensureDefaultWorkspaceTeam();
+        const teamId = routeTeamId ?? defaultTeam._id;
         setCurrentTeamId(teamId);
 
-        // 3. Get projects for the team
+        const teamRes = await apiFetch(`/teams/${teamId}`);
+        if (teamRes?.team?.name) setTeamName(teamRes.team.name);
+
         const projectsRes = await apiFetch(`/teams/${teamId}/projects`);
         setProjects(projectsRes?.projects || projectsRes?.items || []);
       } catch (error) {
@@ -48,7 +43,7 @@ export default function Workspaces() {
     }
 
     loadData();
-  }, []);
+  }, [routeTeamId]);
 
   // دالة إضافة بورد جديدة
   const handleAddBoard = async () => {
@@ -112,35 +107,16 @@ export default function Workspaces() {
 
   return (
     <div className="flex-1 flex flex-col p-8 md:p-12 overflow-y-auto">
-      <div className="max-w-6xl w-full mx-auto">
-        
-        {/* هيدر الدش بورد */}
-        <div className="flex justify-between items-center mb-10 border-b border-gray-200 pb-5">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Workspaces</h1>
+      <div className="max-w-6xl w-full mx-auto">        
+        {projects.length === 0 ? (
+          <div className="text-center py-16 text-gray-500">
+            <p className="text-lg font-medium mb-2">No boards yet</p>
+            <p className="text-sm mb-6">Create your first workspace board to get started.</p>
           </div>
-          
-          <button 
-            onClick={handleAddBoard}
-            className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm shadow-sm"
-          >
-            <FaPlus />
-            Create Board
-          </button>
-        </div>
-        
+        ) : null}
+
         {/* شبكة البوكسات */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          
-          {/* Dummy Workspace Card */}
-          <div 
-            onClick={() => navigate('/board/dummy-workspace-1')}
-            className="h-36 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-5 rounded-2xl font-bold text-xl cursor-pointer shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 flex flex-col justify-between group relative"
-          >
-            <span className="truncate pr-6">Project Alpha Workspace</span>
-            <span className="text-xs font-normal text-indigo-200 group-hover:text-white transition-colors">Open Board →</span>
-          </div>
-
           {projects.map(project => (
             <div 
               key={project._id}

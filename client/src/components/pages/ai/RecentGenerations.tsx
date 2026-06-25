@@ -1,43 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowUpRightFromSquare, FaEllipsisVertical, FaLayerGroup } from 'react-icons/fa6';
+import { FaArrowUpRightFromSquare, FaLayerGroup } from 'react-icons/fa6';
+import { RotateCcw, X } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import {
+  isGenerationRestorable,
+  loadGenerations,
+  type StoredGeneration,
+} from '@/components/pages/ai/generations-storage';
 
-interface Generation {
-  id: string | number; 
-  title: string;
-  meta: string;
-  status: string;
+interface RecentGenerationsProps {
+  projectId: string | null;
+  refreshKey: number;
+  activeGenerationId?: string | null;
+  onSelect?: (generation: StoredGeneration) => void;
+  onDismiss?: (generationId: string) => void;
+  onRetry?: (generation: StoredGeneration) => void;
 }
 
-export default function RecentGenerations() {
-  
-  const [generations, setGenerations] = useState<Generation[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export default function RecentGenerations({
+  projectId,
+  refreshKey,
+  activeGenerationId,
+  onSelect,
+  onDismiss,
+  onRetry,
+}: RecentGenerationsProps) {
+  const [generations, setGenerations] = useState<StoredGeneration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchGenerations = async () => {
-      try {
-        // TODO: Map to actual backend AI endpoint when project context is added to this page
-        // const response = await apiFetch('/ai/generations');
-        setGenerations([
-          { id: 1, title: 'E-Commerce Backlog', meta: '12 tasks created', status: 'COMPLETED' }
-        ]);
-      } catch (error) {
-        console.error("Error loading generations:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!projectId) {
+      setGenerations([]);
+      setIsLoading(false);
+      return;
+    }
 
-    fetchGenerations();
-  }, []);
+    setIsLoading(true);
+    setGenerations(loadGenerations(projectId));
+    setIsLoading(false);
+  }, [projectId, refreshKey]);
 
   if (isLoading) {
     return (
       <div className="w-full mt-12 animate-pulse flex flex-col gap-4">
-        <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
-        {[1, 2].map(n => (
-          <div key={n} className="h-20 w-full bg-gray-100 rounded-2xl"></div>
+        <div className="h-6 w-48 bg-muted rounded mb-2" />
+        {[1, 2].map((n) => (
+          <div key={n} className="h-20 w-full bg-muted/60 rounded-2xl" />
         ))}
       </div>
     );
@@ -45,62 +55,112 @@ export default function RecentGenerations() {
 
   return (
     <div className="w-full mt-6">
-      
-      <div className="flex justify-between items-center mb-6 px-1">
-        <h2 className="text-xl font-bold text-gray-900">
-          Recent Generations
-        </h2>
-        <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-          View History
-          <FaArrowUpRightFromSquare />
-        </a>
-      </div>
+      <h2 className="text-xl font-bold text-foreground mb-6">Recent Generations</h2>
 
-      <div className="flex flex-col gap-3">
-        {generations.map((item) => (
-          
-          <div 
-            key={item.id}
-            className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md transition-shadow duration-200"
-          >
-            
-            <div className="flex items-center gap-4">
-              
-              <div className="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center flex-shrink-0 shadow-inner">
-                <FaLayerGroup />
-              </div>
-
-              <div className="flex flex-col">
-                <h4 className="text-gray-900 font-bold text-[15px]">
-                  {item.title}
-                </h4>
-                <p className="text-gray-500 text-xs mt-0.5">
-                  {item.meta}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              
-              {item.status === 'COMPLETED' ? (
-                <span className="bg-[#e6f4f1] text-[#2c7a7b] text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
-                  Completed
-                </span>
-              ) : (
-                <span className="bg-blue-50 text-blue-600 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider animate-pulse">
-                  In Progress
-                </span>
-              )}
-
-              <button className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-50">
-                <FaEllipsisVertical />
-              </button>
-            </div>
-
+      {generations.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 bg-card rounded-2xl border border-border border-dashed">
+          <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-4">
+            <FaLayerGroup />
           </div>
-        ))}
-      </div>
+          <p className="text-muted-foreground text-sm">No generations yet for this project.</p>
+          <p className="text-muted-foreground/70 text-xs mt-1">
+            Generate tasks above to see them here.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {generations.map((item) => {
+            const isActive = activeGenerationId === item.id;
+            const isClickable =
+              item.status === 'IN_PROGRESS' && isGenerationRestorable(item);
+            const isExpired = item.status === 'EXPIRED';
 
+            return (
+              <div
+                key={item.id}
+                role={isClickable ? 'button' : undefined}
+                tabIndex={isClickable ? 0 : undefined}
+                onClick={isClickable ? () => onSelect?.(item) : undefined}
+                onKeyDown={
+                  isClickable
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelect?.(item);
+                        }
+                      }
+                    : undefined
+                }
+                className={cn(
+                  'flex items-center justify-between p-4 bg-card rounded-2xl border shadow-sm transition-shadow duration-200',
+                  isActive
+                    ? 'border-primary/40 ring-2 ring-primary/20'
+                    : 'border-border',
+                  isClickable && 'cursor-pointer hover:shadow-md hover:border-primary/30',
+                )}
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-12 h-12 rounded-xl bg-secondary text-secondary-foreground flex items-center justify-center shrink-0">
+                    <FaLayerGroup />
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <h4 className="text-foreground font-bold text-[15px] truncate">
+                      {item.title}
+                    </h4>
+                    <p className="text-muted-foreground text-xs mt-0.5">{item.meta}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0 ml-4">
+                  {item.status === 'COMPLETED' ? (
+                    <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                      Completed
+                    </span>
+                  ) : isExpired ? (
+                    <>
+                      <span className="bg-muted text-muted-foreground text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                        Expired
+                      </span>
+                      {onRetry ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1.5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRetry(item);
+                          }}
+                        >
+                          <RotateCcw className="size-3.5" aria-hidden="true" />
+                          Retry
+                        </Button>
+                      ) : null}
+                      {onDismiss ? (
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="ghost"
+                          className="text-muted-foreground"
+                          aria-label="Dismiss generation"
+                          onClick={() => onDismiss(item.id)}
+                        >
+                          <X className="size-4" aria-hidden="true" />
+                        </Button>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="bg-primary/10 text-primary text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider animate-pulse">
+                      In Progress
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

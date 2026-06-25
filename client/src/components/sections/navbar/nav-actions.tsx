@@ -2,8 +2,10 @@ import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { FaMoon, FaSun } from "react-icons/fa6";
 
+import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-context";
 
 import { UserBadge, type NavbarUser } from "./user-badge";
@@ -26,6 +28,7 @@ function NavActions({
   layout = "desktop",
 }: NavActionsProps) {
   const isMobile = layout === "mobile";
+  const { user: authUser, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const themeToggle = (
@@ -39,6 +42,15 @@ function NavActions({
       {theme === "dark" ? <FaSun className="text-yellow-500" /> : <FaMoon className="text-slate-700" />}
     </Button>
   );
+
+  if (!loading && authUser) {
+    return (
+      <>
+        {themeToggle}
+        <UserMenu />
+      </>
+    );
+  }
 
   if (variant === "logged-in" && user) {
     return (

@@ -1,17 +1,21 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
-import { FaPlus, FaFilter, FaTrash, FaArrowLeft, FaUsers } from "react-icons/fa6";
+import { useParams } from "react-router";
+import { FaPlus } from "react-icons/fa6";
 import Swal from "sweetalert2";
 import { apiFetch } from "../../lib/api";
+import { useSetPageTitle } from "@/context/page-title-context";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import Teams from "./Teams";
-
+import { KanbanTaskCard, type KanbanTaskCardData } from "./task-card";
+import { TaskDetailModal, type TaskListPatch } from "./task-detail-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { applyTaskListPatch } from "@/lib/apply-task-list-patch";
+import { reorderBoardTasks, sortTasksByColumnOrder } from "@/lib/reorder-board-tasks";
 // 1. حذفنا الـ BoardProps لأننا هنجيب الـ boardId من الـ URL
 
 // 2. تعريف شكل الـ Column (Now Hardcoded based on backend enum)
@@ -20,70 +24,124 @@ interface ColumnType {
   title: string;
 }
 
-const DEFAULT_COLUMNS: ColumnType[] = [
-  { id: "Backlog", title: "Backlog" },
+const SPRINT_COLUMNS: ColumnType[] = [
   { id: "To Do", title: "To Do" },
   { id: "In Progress", title: "In Progress" },
   { id: "Review", title: "Review" },
   { id: "Done", title: "Done" },
 ];
 
-// 3. تعريف شكل الـ Task
-interface TaskType {
-  _id: string;
-  title: string;
-  status: string; // Used instead of columnId
-  priority?: string;
-  tag?: string;
-  tagColor?: string;
+const COLUMN_CARD_SKELETON_HEIGHTS = ["h-24", "h-28", "h-20"] as const;
+const SPRINT_COLUMN_IDS = SPRINT_COLUMNS.map((column) => column.id);
+
+function BoardSkeleton() {
+  return (
+    <div className="flex-1 flex flex-col p-8 overflow-y-auto">
+      <div className="flex justify-between items-center mb-8 shrink-0">
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="flex-1 overflow-x-auto pb-4">
+        <div className="flex gap-6 h-full items-start">
+          {SPRINT_COLUMNS.map((column) => (
+            <div
+              key={column.id}
+              className="w-80 shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col"
+            >
+              <div className="p-3 flex justify-between items-center">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </div>
+              <div className="flex flex-col gap-3 p-3 min-h-[150px]">
+                {COLUMN_CARD_SKELETON_HEIGHTS.map((height, cardIndex) => (
+                  <Skeleton key={cardIndex} className={`${height} rounded-lg`} />
+                ))}
+              </div>
+              <div className="p-3 border-t border-gray-200/50">
+                <Skeleton className="h-9 w-full rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
+
+// 3. تعريف شكل الـ Task
+type TaskType = KanbanTaskCardData;
 
 export default function Board() {
   const { boardId } = useParams();
-  const navigate = useNavigate();
-  const [boardTitle, setBoardTitle] = useState("Loading...");
-  const [teamId, setTeamId] = useState<string | null>(null);
+  const [boardTitle, setBoardTitle] = useState<string>();
+  const [sprintSubtitle, setSprintSubtitle] = useState("Loading sprint...");
+  const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({});
   const [tasks, setTasks] = useState<TaskType[]>([]);
-  const [activeTab, setActiveTab] = useState<"board" | "team">("board");
+  const [loading, setLoading] = useState(true);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+
+  useSetPageTitle(loading ? undefined : boardTitle);
 
   // ==========================================
   // 1. جلب البيانات المفلترة حسب الـ boardId الحالي
   // ==========================================
-  const fetchData = async () => {
-    if (boardId === 'dummy-workspace-1') {
-      setBoardTitle("Project Alpha Workspace");
-      const DUMMY_TASKS: TaskType[] = [
-        { _id: "1", title: "Design sprint planning template", status: "To Do", tag: "Design", tagColor: "purple" },
-        { _id: "2", title: "Set up CI/CD pipeline", status: "To Do", tag: "DevOps", tagColor: "orange" },
-        { _id: "3", title: "Write API documentation", status: "To Do", tag: "Docs", tagColor: "green" },
-        { _id: "4", title: "Implement user authentication", status: "In Progress", tag: "Auth", tagColor: "red" },
-        { _id: "5", title: "Build notification system", status: "In Progress", tag: "Feature", tagColor: "blue" },
-        { _id: "6", title: "Project setup & configuration", status: "Done", tag: "Setup", tagColor: "gray" },
-        { _id: "7", title: "Design system tokens", status: "Done", tag: "Design", tagColor: "purple" },
-      ];
-      setTasks(DUMMY_TASKS);
-      return;
-    }
+  const fetchData = async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!boardId) return;
 
     try {
-      // Fetch board (project) details to get title
       const projectData = await apiFetch(`/projects/${boardId}`);
-      if (projectData && projectData.project) {
+      if (projectData?.project) {
         setBoardTitle(projectData.project.name);
-        setTeamId(projectData.project.teamId);
       } else {
         setBoardTitle("Workspace Board");
       }
 
-      // Fetch Tasks
-      const tasksData = await apiFetch(`/projects/${boardId}/tasks`);
+      const [tasksData, sprintsData] = await Promise.all([
+        apiFetch(`/projects/${boardId}/tasks`),
+        apiFetch(`/projects/${boardId}/sprints`),
+      ]);
+
       setTasks(tasksData?.tasks || tasksData?.items || []);
+
+      const resolvedTeamId = projectData?.project?.teamId ?? null;
+      if (resolvedTeamId) {
+        try {
+          const teamRes = await apiFetch(`/teams/${resolvedTeamId}`);
+          const members = teamRes?.members ?? [];
+          setAssigneeNames(
+            Object.fromEntries(
+              members.map((member: { userId: string; user?: { name?: string } }) => [
+                member.userId,
+                member.user?.name?.trim() ?? "",
+              ]),
+            ),
+          );
+        } catch {
+          setAssigneeNames({});
+        }
+      } else {
+        setAssigneeNames({});
+      }
+
+      const sprints = sprintsData?.sprints || [];
+      const activeSprint = sprints.find(
+        (s: { status: string }) => s.status !== "completed",
+      );
+      setSprintSubtitle(
+        activeSprint ? `${activeSprint.name} • Active Board` : "No active sprint",
+      );
     } catch (error) {
       console.error("Error fetching data:", error);
+      setSprintSubtitle("No active sprint");
+    } finally {
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
   }, [boardId]);
 
@@ -91,7 +149,7 @@ export default function Board() {
   // 2. منطق الـ Drag and Drop (حددنا نوع الـ result بـ DropResult)
   // ==========================================
   const onDragEnd = async (result: DropResult) => {
-    const { destination, source, draggableId } = result;
+    const { destination, source } = result;
     if (!destination) return;
     if (
       destination.droppableId === source.droppableId &&
@@ -99,27 +157,23 @@ export default function Board() {
     )
       return;
 
-    const newStatus = destination.droppableId;
+    const { tasks: reorderedTasks, updates } = reorderBoardTasks(
+      tasks,
+      result,
+      SPRINT_COLUMN_IDS,
+    );
+    if (updates.length === 0) return;
 
-    const updatedTasks = tasks.map((task) => {
-      if (task._id === draggableId) {
-        return { ...task, status: newStatus };
-      }
-      return task;
-    });
-
-    setTasks(updatedTasks);
-
-    if (boardId === 'dummy-workspace-1') return; // Do not save dummy drag to backend
+    setTasks(reorderedTasks);
 
     try {
-      await apiFetch(`/tasks/${draggableId}`, {
+      await apiFetch(`/projects/${boardId}/tasks/reorder`, {
         method: "PUT",
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ tasks: updates }),
       });
     } catch (error) {
       console.error("Error saving drag drop position:", error);
-      fetchData();
+      fetchData({ silent: true });
     }
   };
 
@@ -141,11 +195,9 @@ export default function Board() {
     if (!taskTitle || !taskTitle.trim()) return;
 
     const newTask = {
-      title: taskTitle.trim(),
+      name: taskTitle.trim(),
       status: columnId,
     };
-
-    if (boardId === 'dummy-workspace-1') return; // Do not save dummy data to backend
 
     try {
       const res = await apiFetch(`/projects/${boardId}/tasks`, {
@@ -159,70 +211,45 @@ export default function Board() {
     }
   };
 
-  // ==========================================
-  // 7. مسح تاسك
-  // ==========================================
-  const handleDeleteTask = async (taskId: string) => {
-    if (boardId === 'dummy-workspace-1') return; // Do not save dummy data to backend
-    try {
-      await apiFetch(`/tasks/${taskId}`, {
-        method: "DELETE",
-      });
-      setTasks(tasks.filter((task) => task._id !== taskId));
-    } catch (error) {
-      console.error("Error deleting task:", error);
+  const applyTaskPatch = (patch?: TaskListPatch) => {
+    if (!patch?.taskId) {
+      fetchData({ silent: true });
+      return;
     }
+    if (patch.assigneeNames) {
+      setAssigneeNames((prev) => ({ ...prev, ...patch.assigneeNames }));
+    }
+    setTasks((prev) => applyTaskListPatch(prev, patch, { excludeStatus: "Backlog" }));
   };
+
+  const openTaskDetail = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setTaskModalOpen(true);
+  };
+
+  if (loading) {
+    return <BoardSkeleton />;
+  }
 
   return (
     <div className="flex-1 flex flex-col p-8 overflow-y-auto">
         {/* رأس البورد */}
-        <div className="flex justify-between items-center mb-8 flex-shrink-0">
+        <div className="flex justify-between items-center mb-8 shrink-0">
           <div>
-            <button
-              onClick={() => navigate('/workspaces')}
-              className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-bold mb-2 transition-colors uppercase tracking-wider"
-            >
-              <FaArrowLeft /> Back to Workspaces
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">{boardTitle}</h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Sprint 24 &bull; Active Board
+            <p className="text-gray-500 text-sm">
+              {sprintSubtitle}
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setActiveTab(activeTab === 'team' ? 'board' : 'team')}
-              className={`flex items-center gap-2 border px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-sm ${
-                activeTab === 'team' 
-                  ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' 
-                  : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700'
-              }`}
-            >
-              <FaUsers className={activeTab === 'team' ? 'text-blue-600' : 'text-gray-500'} />
-              {activeTab === 'team' ? 'Back to Board' : 'Team Members'}
-            </button>
-            {activeTab === 'board' && (
-              <div className="flex gap-2">
-                {/* Custom Columns removed to comply with fixed backend columns */}
-              </div>
-            )}
-          </div>
         </div>
 
-        {activeTab === 'team' ? (
-          <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <Teams teamId={teamId} />
-          </div>
-        ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
           <div className="flex-1 overflow-x-auto pb-4">
             <div className="flex gap-6 h-full items-start">
-              {DEFAULT_COLUMNS.map((column) => (
+              {SPRINT_COLUMNS.map((column) => (
                 <div
                   key={column.id}
-                  className="w-80 flex-shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col max-h-full group"
+                  className="w-80 shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col max-h-full group"
                 >
                   {/* هيدر العمود */}
                   <div className="p-3 flex justify-between items-center hover:bg-gray-200/50 rounded-t-xl transition-colors">
@@ -247,36 +274,27 @@ export default function Board() {
                         {...provided.droppableProps}
                         className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 min-h-[150px]"
                       >
-                        {tasks
-                          .filter((task) => task.status === column.id)
-                          .map((task, index) => (
+                        {sortTasksByColumnOrder(
+                          tasks.filter((task) => task.status === column.id),
+                        ).map((task, index) => (
                             <Draggable
                               key={String(task._id)}
                               draggableId={String(task._id)}
                               index={index}
                             >
-                              {(provided: any) => (
+                              {(provided) => (
                                 <div
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-blue-400 transition-colors group/card relative"
+                                  style={provided.draggableProps.style as React.CSSProperties}
+                                  className="outline-none"
                                 >
-                                  <button
-                                    onClick={() => handleDeleteTask(task._id)}
-                                    className="absolute top-3 right-3 text-gray-300 hover:text-red-500 opacity-0 group-hover/card:opacity-100 transition-opacity p-1"
-                                  >
-                                    <FaTrash size={12} />
-                                  </button>
-
-                                  <div className="flex gap-2 mb-2">
-                                    <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                      {task.tag || "TASK"}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm font-medium text-gray-800 pr-5">
-                                    {task.title}
-                                  </p>
+                                  <KanbanTaskCard
+                                    task={task}
+                                    assigneeNames={assigneeNames}
+                                    dragHandleProps={provided.dragHandleProps}
+                                    onClick={() => openTaskDetail(String(task._id))}
+                                  />
                                 </div>
                               )}
                             </Draggable>
@@ -301,7 +319,12 @@ export default function Board() {
             </div>
           </div>
         </DragDropContext>
-        )}
+        <TaskDetailModal
+          taskId={selectedTaskId}
+          open={taskModalOpen}
+          onOpenChange={setTaskModalOpen}
+          onTaskUpdated={applyTaskPatch}
+        />
     </div>
   );
 }

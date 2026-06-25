@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 
+import { generateUniqueTeamCode } from "../src/lib/team-code";
 import { Project } from "../src/models/project";
 import { Sprint } from "../src/models/sprint";
 import { Task } from "../src/models/task";
@@ -24,7 +25,8 @@ export async function createTeamWithMembership(
   role: "manager" | "member" = "manager",
   teamName = "Platform Team",
 ) {
-  const team = await Team.create({ name: teamName, createdBy: userId });
+  const code = await generateUniqueTeamCode();
+  const team = await Team.create({ name: teamName, code, createdBy: userId });
   await TeamMembership.create({ teamId: team._id, userId, role });
   return team;
 }

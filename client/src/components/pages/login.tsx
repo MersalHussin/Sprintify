@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -10,10 +10,13 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { loginSchema, type LoginFormValues } from "@/models/auth-schemas.zod";
 import { useAuth } from "@/context/auth-context";
+import { getRedirectPath } from "@/lib/redirect-after-auth";
 
 const Login = () => {
   const { user, signInWithEmail } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = getRedirectPath(location);
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +37,7 @@ const Login = () => {
       setAuthError(null);
       setLoading(true);
       await signInWithEmail(data.email, data.password);
-      navigate("/dashboard");
+      navigate(redirectTo, { replace: true });
     } catch (error: any) {
       console.error(error);
       setAuthError(error.message || "An error occurred during sign-in.");
@@ -49,6 +52,7 @@ const Login = () => {
       prompt="Don't have an account?"
       promptActionLabel="Register"
       promptActionTo="/register"
+      promptActionState={location.state}
     >
       <form
         className="flex w-full flex-col gap-4"
@@ -108,7 +112,7 @@ const Login = () => {
           </Button>
 
           <AuthDivider />
-          <SocialAuthButtons onError={setAuthError} />
+          <SocialAuthButtons onError={setAuthError} redirectTo={redirectTo} />
           <TermsText />
         </FieldGroup>
       </form>

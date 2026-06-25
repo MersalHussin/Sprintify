@@ -5,6 +5,7 @@ import { sendRouteError } from "../middleware/error-handler";
 import {
   deleteMeService,
   getMeService,
+  getMyTasksService,
   getUserByIdService,
   updateMeService,
   type UserProfileUpdate,
@@ -38,6 +39,16 @@ export const deleteMe = async (req: Request, res: Response) => {
     return handleResponse(res, 200, undefined, "Account deleted successfully");
   } catch (error) {
     if(sendRouteError(res, error)) return;
+    console.error(error as Error);
+    return handleResponse(res, 500, undefined, "An unexpected error occurred");
+  }
+};
+
+export const getMyTasks = async (req: Request, res: Response) => {
+  try {
+    const result = await getMyTasksService(req.user!.id);
+    return handleResponse(res, 200, result);
+  } catch (error) {
     console.error(error as Error);
     return handleResponse(res, 500, undefined, "An unexpected error occurred");
   }

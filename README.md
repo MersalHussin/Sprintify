@@ -1,5 +1,27 @@
 # 📎 Project Name: Sprintify
 
+## Monorepo
+
+This repository is a pnpm workspace with two packages:
+
+| Package | Path | Description |
+|---------|------|-------------|
+| `@sprintify/backend` | `backend/` | Express API (TypeScript) |
+| `@sprintify/client` | `client/` | React SPA (Vite) |
+
+From the repository root:
+
+```bash
+pnpm install          # install all workspace dependencies
+pnpm dev              # run backend + client in parallel
+pnpm dev:backend      # backend only
+pnpm dev:client       # client only
+pnpm build            # build all packages
+pnpm test             # backend tests
+pnpm typecheck        # backend typecheck
+pnpm lint             # client lint
+```
+
 ## 📌 Project Overview
 Sprintify is a collaborative, AI-powered project management tool designed for agile development teams. It bridges the gap between high-level project ideation and technical execution. By integrating intelligent prompt engineering, Sprintify analyzes a user’s broad "Project Goal" and automatically transforms it into actionable technical tasks, user stories, and acceptance criteria. The platform ensures a seamless workflow using a robust tech stack (React, TypeScript, Node.js) and guarantees consistent deployment environments through Docker containerization.
 

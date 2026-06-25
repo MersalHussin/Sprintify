@@ -24,14 +24,22 @@ export type TaskCreateInput = {
   assignees?: string[];
   sprintId?: Types.ObjectId | string;
   subtasks?: SubtaskInput[];
+  order?: number;
 };
 
 export type TaskUpdateInput = Partial<TaskCreateInput>;
+
+export type TaskReorderEntry = {
+  taskId: string;
+  status: TaskStatus;
+  order: number;
+};
 
 export type GeneratedTask = {
   name: string;
   description: string;
   priority: TaskPriority;
   status: TaskStatus;
+  category: string;
   subtasks: { name: string; completed: boolean }[];
 };

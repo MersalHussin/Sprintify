@@ -14,12 +14,15 @@ import taskRoutes from "./tasks/routes";
 import teamRoutes from "./teams/routes";
 import userRoutes from "./users/routes";
 
-/** Factory so integration tests can mount routes without starting the HTTP listener. */
 export function createApp(): express.Application {
   const app = express();
 
   app.use(cors({ origin: env.frontendUrl, credentials: true }));
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+  );
   app.get("/health", healthCheck);
   app.use(requireAuth);
   app.use(express.json({ limit: "1mb" }));

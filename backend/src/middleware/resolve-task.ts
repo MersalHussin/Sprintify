@@ -12,7 +12,6 @@ export const resolveTask = async (req: Request, res: Response, next: NextFunctio
   const task = await Task.findById(taskId);
   if(!task) return handleResponse(res, 404, undefined, "Task not found");
 
-  // Membership and project lookups are independent once task refs are loaded.
   const [membership, project] = await Promise.all([
     findCallerMembership(task.teamId, req.user!.id),
     Project.findById(task.projectId),

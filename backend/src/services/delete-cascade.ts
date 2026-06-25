@@ -37,7 +37,6 @@ async function deleteCommentsForTasks(
   taskFilter: { projectId: Types.ObjectId } | { teamId: Types.ObjectId },
   session?: ClientSession,
 ): Promise<void> {
-  // distinct(filter) issues one indexed scan; find().distinct() would hydrate full task docs first.
   const taskIds = (await withSession(Task.distinct("_id", taskFilter), session)) as Types.ObjectId[];
   if(taskIds.length === 0) return;
   await withSession(TaskComment.deleteMany({ taskId: { $in: taskIds } }), session);

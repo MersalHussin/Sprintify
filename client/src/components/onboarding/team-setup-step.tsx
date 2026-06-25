@@ -13,12 +13,18 @@ import {
 } from "@/models/onboarding-schemas.zod";
 
 export type TeamSetupStepProps = {
-  readonly onJoinTeam: (values: JoinTeamFormValues) => void;
-  readonly onCreateTeam: (values: CreateTeamFormValues) => void;
+  readonly isSubmitting?: boolean;
+  readonly onJoinTeam: (values: JoinTeamFormValues) => void | Promise<void>;
+  readonly onCreateTeam: (values: CreateTeamFormValues) => void | Promise<void>;
   readonly onSkip: () => void;
 };
 
-function TeamSetupStep({ onJoinTeam, onCreateTeam, onSkip }: TeamSetupStepProps) {
+function TeamSetupStep({
+  isSubmitting = false,
+  onJoinTeam,
+  onCreateTeam,
+  onSkip,
+}: TeamSetupStepProps) {
   const joinForm = useForm<JoinTeamFormValues>({
     resolver: zodResolver(joinTeamSchema),
     defaultValues: { inviteCode: "" },
@@ -57,15 +63,20 @@ function TeamSetupStep({ onJoinTeam, onCreateTeam, onSkip }: TeamSetupStepProps)
             </label>
             <Input
               id="inviteCode"
-              placeholder="ExampleCode"
+              placeholder="ABC12XYZ"
               className="h-12 rounded-full px-4"
               aria-invalid={joinForm.formState.errors.inviteCode ? true : undefined}
               aria-describedby={joinForm.formState.errors.inviteCode ? "inviteCode-error" : undefined}
               {...joinForm.register("inviteCode")}
             />
           </div>
-          <Button type="submit" size="lg" className="rounded-full font-sans font-medium">
-            Join Team
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className="rounded-full font-sans font-medium"
+          >
+            {isSubmitting ? "Joining..." : "Join Team"}
           </Button>
         </div>
         {joinForm.formState.errors.inviteCode ? (
@@ -98,8 +109,13 @@ function TeamSetupStep({ onJoinTeam, onCreateTeam, onSkip }: TeamSetupStepProps)
               {...createForm.register("teamName")}
             />
           </div>
-          <Button type="submit" size="lg" className="rounded-full font-sans font-medium">
-            Create your Team
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className="rounded-full font-sans font-medium"
+          >
+            {isSubmitting ? "Creating..." : "Create your Team"}
           </Button>
         </div>
         {createForm.formState.errors.teamName ? (

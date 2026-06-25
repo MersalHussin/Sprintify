@@ -34,6 +34,7 @@ export const taskValidator: JsonSchema = {
     projectId: objectId,
     teamId: objectId,
     sprintId: objectId,
+    order: { bsonType: ["int", "long", "double"], minimum: 0 },
     createdBy: stringField(128),
     createdAt: date,
     updatedAt: date,

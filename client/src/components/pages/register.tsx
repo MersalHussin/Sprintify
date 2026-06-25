@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, User } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -11,10 +11,13 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { registerSchema, type RegisterFormValues } from "@/models/auth-schemas.zod";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
+import { getRedirectPath } from "@/lib/redirect-after-auth";
 
 const Register = () => {
-  const { user, signUpWithEmail } = useAuth();
+  const { user, signUpWithEmail, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = getRedirectPath(location, "/onboarding");
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -44,11 +47,12 @@ const Register = () => {
           method: 'PATCH',
           body: JSON.stringify({ firstName: data.username, lastName: '' })
         });
+        await refreshProfile();
       } catch (e) {
         console.error("Failed to sync name to backend", e);
       }
       
-      navigate("/onboarding");
+      navigate(redirectTo, { replace: true });
     } catch (error: any) {
       console.error(error);
       setAuthError(error.message || "An error occurred during registration.");
@@ -63,6 +67,7 @@ const Register = () => {
       prompt="Already an existing member?"
       promptActionLabel="Login"
       promptActionTo="/login"
+      promptActionState={location.state}
     >
       <form
         className="flex w-full flex-col gap-4"

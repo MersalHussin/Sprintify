@@ -30,5 +30,5 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     throw new Error(data.message || 'API request failed');
   }
 
-  return data.data; // The API wraps responses in { status, message, data }
+  return data.data;
 }

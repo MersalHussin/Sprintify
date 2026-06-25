@@ -55,6 +55,12 @@ vi.mock("../../src/lib/openai", () => ({
   }),
 }));
 
+vi.mock("../../src/lib/brevo", () => ({
+  getBrevo: vi.fn(() => ({
+    sendTransacEmail: vi.fn(async () => ({ messageId: "test-email-id" })),
+  })),
+}));
+
 export function clearRedisStore() {
   redisStore.clear();
 }

@@ -94,7 +94,7 @@ function MobileNav({
             <div
               className={cn(
                 "mt-6 flex flex-col gap-3 border-t border-border/60 pt-6",
-                variant === "logged-in" && user ? "items-start" : undefined,
+                variant === "logged-in" ? "items-start" : undefined,
               )}
             >
               <NavActions
