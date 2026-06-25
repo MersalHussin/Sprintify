@@ -8,14 +8,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useContactModal } from "@/context/contact-modal-context";
 
-/**
- * Global Contact-Us modal.
- *
- * Reads its open/close state from `ContactModalContext`, so any component
- * anywhere in the tree can trigger it via `useContactModal().open()`.
- *
- * Render this component **once** near the app root (e.g. in the home page).
- */
 function ContactModal() {
   const { isOpen: open, close: onClose } = useContactModal();
 

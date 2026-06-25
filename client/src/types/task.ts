@@ -48,3 +48,16 @@ export type TaskDetailResponse = {
   users: Record<string, TaskUser>
   callerRole?: string
 }
+
+export type TaskListPatch = {
+  taskId: string
+  deleted?: boolean
+  commentCount?: number
+  name?: string
+  status?: string
+  priority?: string
+  category?: string
+  assignees?: string[]
+  assigneeNames?: Record<string, string>
+  subtasks?: { name: string; completed: boolean }[]
+}

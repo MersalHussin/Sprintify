@@ -6,7 +6,6 @@ import { MEMBERSHIP_ROLE_FIELDS } from "./query-projections";
 
 type CallerMembership = { role: TeamRole };
 
-/** Single place for team membership reads used by middleware and services. */
 export async function findCallerMembership(
   teamId: Types.ObjectId | string,
   userId: string,

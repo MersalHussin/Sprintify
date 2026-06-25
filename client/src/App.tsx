@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { ThemeProvider } from "@/context/theme-context";
 import { ContactModalProvider } from "@/context/contact-modal-context";
 import { ContactModal } from "@/components/ui/contact-modal";
+import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 
 const Home = lazy(() => import("./components/pages/home"));
 const Login = lazy(() => import("./components/pages/login"));
@@ -27,11 +28,7 @@ import TeamMembers from "./components/pages/team-members";
 import { ProtectedRoute, PublicRoute } from "@/components/auth";
 
 function RouteFallback() {
-  return (
-    <div className="flex min-h-svh items-center justify-center bg-background text-foreground dark:bg-slate-950 dark:text-white">
-      <p className="font-sans text-sm text-muted-foreground">Loading…</p>
-    </div>
-  );
+  return <AppLoadingScreen />;
 }
 
 function App() {
@@ -39,7 +36,7 @@ function App() {
     <ThemeProvider>
       <ContactModalProvider>
         <AuthProvider>
-        <div className="min-h-svh bg-background text-foreground dark:bg-slate-950 dark:text-white transition-colors duration-200">
+        <div className="min-h-svh bg-bg-base text-text-primary transition-colors duration-150">
           <BrowserRouter>
             <Suspense fallback={<RouteFallback />}>
               <Routes>

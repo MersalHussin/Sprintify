@@ -39,7 +39,7 @@ function NavActions({
       className={cn(isMobile && "w-full flex items-center justify-center")}
       title="Toggle theme"
     >
-      {theme === "dark" ? <FaSun className="text-yellow-500" /> : <FaMoon className="text-slate-700" />}
+      {theme === "dark" ? <FaSun className="text-yellow-500" /> : <FaMoon className="text-text-secondary" />}
     </Button>
   );
 

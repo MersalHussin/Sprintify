@@ -1,5 +1,7 @@
-import React, { FormEvent } from 'react';
+import { type FormEvent } from 'react';
 import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from 'react-icons/fa6';
+
+import { Button } from '@/components/ui/button';
 
 interface PromptInputProps {
   projectId: string | null;
@@ -56,14 +58,14 @@ export default function PromptInput({
           disabled={isGenerating || !projectId}
         />
 
-        <button
+        <Button
           type="submit"
           disabled={isGenerating || !promptText.trim() || !projectId}
-          className="bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-medium px-6 py-3 rounded-xl flex items-center gap-2 transition-colors duration-200"
+          className="rounded-xl px-6"
         >
           {isGenerating ? 'Generating…' : 'Generate'}
           {!isGenerating && <FaArrowRight />}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -44,7 +44,7 @@ function AssigneeStack({
         <Avatar key={assigneeId} size="sm">
           <AvatarFallback
             className={cn(
-              "text-[10px] font-semibold text-white",
+              "text-[10px] font-semibold text-primary-foreground",
               getAvatarBackgroundClass(assigneeId),
             )}
           >

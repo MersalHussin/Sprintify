@@ -11,15 +11,12 @@ export type FooterProps = {
 type FooterLink = {
   label: string;
   href: string;
-  /** Open in a new tab. Defaults to `false`. */
   external?: boolean;
   disabled?: boolean;
 };
 
 type SocialLink = FooterLink & {
-  /** Short name used for the `aria-label` and `alt` text. */
   name: string;
-  /** Path to the SVG icon in the public folder. */
   icon: string;
 };
 

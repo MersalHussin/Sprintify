@@ -110,7 +110,6 @@ const parsed: ParsedEnvironment = envSchema.parse({
   brevoFromName: process.env.BREVO_FROM_NAME,
 });
 
-/** Strip trailing slash so CORS Origin matches the browser value exactly. */
 function normalizeFrontendUrl(url: string): string {
   return url.replace(/\/+$/, "");
 }

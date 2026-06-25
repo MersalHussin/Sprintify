@@ -3,10 +3,12 @@ import { Link } from "react-router"
 import { ClipboardList } from "lucide-react"
 
 import { KanbanTaskCard, type KanbanTaskCardData } from "@/components/kanban/task-card"
-import { TaskDetailModal, type TaskListPatch } from "@/components/kanban/task-detail-modal"
+import { TaskDetailModal } from "@/components/kanban/task-detail-modal"
+import { EmptyState } from "@/components/shared/empty-state"
 import { applyTaskListPatch } from "@/lib/apply-task-list-patch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { apiFetch } from "@/lib/api"
+import type { TaskListPatch } from "@/types/task"
 
 interface TaskGroup {
   project: { _id: string; name: string }
@@ -130,19 +132,17 @@ export default function MyTasks() {
       {loading ? (
         <MyTasksSkeleton />
       ) : totalTasks === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 px-6 py-16 text-center">
-          <ClipboardList className="size-10 text-muted-foreground/60" aria-hidden="true" />
-          <h2 className="mt-4 text-lg font-medium text-foreground">No assigned tasks</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            When a task is assigned to you, it will appear here grouped by project.
-          </p>
-          <Link
-            to="/workspaces"
-            className="mt-6 text-sm font-medium text-primary hover:underline"
-          >
-            Browse workspaces
-          </Link>
-        </div>
+        <EmptyState
+          variant="page"
+          icon={<ClipboardList className="size-10 text-muted-foreground/60" aria-hidden="true" />}
+          title="No assigned tasks"
+          description="When a task is assigned to you, it will appear here grouped by project."
+          action={
+            <Link to="/workspaces" className="text-sm font-medium text-primary hover:underline">
+              Browse workspaces
+            </Link>
+          }
+        />
       ) : (
         <div className="flex flex-col gap-10">
           {groups.map((group) => (

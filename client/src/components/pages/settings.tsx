@@ -90,16 +90,16 @@ export default function Settings() {
   });
 
   return (
-    <div className="flex-1 p-8 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="flex-1 p-8 bg-bg-base text-text-primary transition-colors duration-150">
       <div className="max-w-2xl flex flex-col gap-6">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+        <div className="rounded-2xl border border-border bg-bg-surface p-6">
           <h2 className="text-xl font-semibold mb-4">Profile</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-sm text-text-secondary mb-6">
             Update your personal information.
           </p>
 
           {profileLoading && !profile ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading profile…</p>
+            <p className="text-sm text-text-secondary">Loading profile…</p>
           ) : (
             <form className="flex flex-col gap-6" onSubmit={onSubmit} noValidate>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -253,7 +253,7 @@ export default function Settings() {
               ) : null}
 
               {saveSuccess ? (
-                <p role="status" className="text-sm text-green-600 dark:text-green-400">
+                <p role="status" className="text-sm text-success">
                   Profile saved successfully.
                 </p>
               ) : null}
@@ -265,20 +265,20 @@ export default function Settings() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+        <div className="rounded-2xl border border-border bg-bg-surface p-6">
           <h2 className="text-xl font-semibold mb-4">Appearance</h2>
 
           <div className="flex items-center justify-between py-4">
             <div>
               <p className="font-medium">Theme</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-text-secondary">
                 Switch between dark and light mode.
               </p>
             </div>
 
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="flex items-center gap-2 rounded-lg border border-border bg-bg-subtle px-4 py-2 transition-colors duration-150 hover:bg-bg-inset"
             >
               {theme === 'dark' ? (
                 <>

@@ -188,7 +188,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "flex h-7 min-w-0 shrink-0 items-center px-2 text-[11px] font-medium tracking-wide text-sidebar-foreground/60 uppercase",
+        "flex h-7 min-w-0 shrink-0 items-center px-2 text-xs font-medium tracking-wider text-text-muted uppercase",
         className,
       )}
       {...props}
@@ -233,7 +233,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-2 overflow-hidden rounded-md px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0 [&>span:last-child]:truncate",
+  "flex w-full items-center gap-2 overflow-hidden rounded-md px-2 py-1.5 text-left text-sm text-text-secondary outline-hidden transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent data-active:border-l-2 data-active:border-accent data-active:bg-bg-subtle data-active:pl-[calc(0.5rem-2px)] data-active:font-medium data-active:text-text-primary [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-text-secondary data-active:[&>svg]:text-accent [&>span:last-child]:truncate",
   {
     variants: {
       size: {
@@ -316,7 +316,7 @@ function SidebarMenuSubButton({
       data-sidebar="menu-sub-button"
       data-active={isActive}
       className={cn(
-        "flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-3.5 [&>svg]:shrink-0",
+        "flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-md px-2 text-text-secondary outline-hidden transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent data-active:border-l-2 data-active:border-accent data-active:bg-bg-subtle data-active:pl-[calc(0.5rem-2px)] data-active:text-text-primary data-active:[&>svg]:text-accent [&>span:last-child]:truncate [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-text-secondary",
         className,
       )}
       {...props}

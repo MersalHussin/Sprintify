@@ -1,7 +1,5 @@
 export type NavbarUser = {
-  /** Display name shown in the welcome line and used for the avatar fallback. */
   readonly name: string;
-  /** Optional remote avatar URL. Falls back to initials when omitted. */
   readonly avatarUrl?: string;
 };
 
@@ -29,7 +27,7 @@ function UserBadge({ user, onClick }: { readonly user: NavbarUser; readonly onCl
           height={36}
           loading="lazy"
           decoding="async"
-          className="size-9 rounded-full object-cover outline outline-1 -outline-offset-1 outline-[rgba(0,0,0,0.1)] dark:outline-[rgba(255,255,255,0.1)]"
+          className="size-9 rounded-full object-cover outline outline-1 -outline-offset-1 outline-border"
         />
       ) : (
         <span

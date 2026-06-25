@@ -179,7 +179,7 @@ export default function ChatbotPanel() {
         aria-label={open ? "Close assistant" : "Open assistant"}
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="fixed right-0 top-1/2 z-40 h-11 w-11 -translate-y-1/2 rounded-r-none rounded-l-xl shadow-lg"
+        className="fixed right-0 top-1/2 z-40 h-11 w-11 -translate-y-1/2 rounded-r-none rounded-l-xl border border-border border-r-0"
         size="icon"
       >
         <BotMessageSquare className="size-5" />

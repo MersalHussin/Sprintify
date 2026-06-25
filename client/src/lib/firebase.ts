@@ -1,4 +1,4 @@
-  import { initializeApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -11,7 +11,6 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Warn if configuration is missing, but don't crash the build/runtime immediately
 if (!import.meta.env.VITE_FIREBASE_API_KEY) {
   console.warn(
     "Firebase API Key is missing. Firebase Authentication will not function correctly until you populate the .env file."

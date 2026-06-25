@@ -57,7 +57,7 @@ export function UserMenu({ className }: { className?: string }) {
       >
         <Avatar size="default">
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
-          <AvatarFallback className={cn("font-semibold text-white", avatarBg)}>
+          <AvatarFallback className={cn("font-semibold text-primary-foreground", avatarBg)}>
             {initials}
           </AvatarFallback>
         </Avatar>

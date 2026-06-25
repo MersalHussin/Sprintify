@@ -12,11 +12,8 @@ import type { NavbarUser } from "./user-badge";
 export type { NavbarUser, NavbarVariant };
 
 export type NavbarProps = {
-  /** Controls the right-side action. Defaults to `"default"`. */
   readonly variant?: NavbarVariant;
-  /** Required when `variant="logged-in"`. */
   readonly user?: NavbarUser;
-  /** Optional override for the CTA link/handler. */
   readonly onGetStarted?: () => void;
 };
 
@@ -42,10 +39,8 @@ function Navbar({ variant: variantProp = "default", user, onGetStarted }: Navbar
       <nav
         aria-label="Primary"
         className={cn(
-          "mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 rounded-full bg-background/95 px-3 transition-shadow duration-150 sm:px-5",
-          scrolled
-            ? "shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_18px_45px_rgba(15,23,42,0.12)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_18px_45px_rgba(0,0,0,0.35)]"
-            : "shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_24px_rgba(15,23,42,0.05)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_24px_rgba(0,0,0,0.25)]",
+          "mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 rounded-full border border-border bg-bg-surface/95 px-3 transition-colors duration-150 sm:px-5",
+          scrolled && "border-border-strong",
         )}
       >
         <Logo />

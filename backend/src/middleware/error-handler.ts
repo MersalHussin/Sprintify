@@ -7,7 +7,6 @@ export function notFoundHandler(_req: Request, res: Response) {
   return handleResponse(res, 404, undefined, "The requested resource was not found");
 }
 
-/** Maps known service / persistence errors to HTTP responses. Returns true when handled. */
 export function sendRouteError(res: Response, err: unknown): boolean {
   if(err instanceof mongoose.Error.CastError) {
     handleResponse(res, 400, undefined, "Invalid resource identifier");

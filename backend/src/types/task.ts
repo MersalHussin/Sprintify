@@ -14,7 +14,6 @@ export type CommentInput = {
   content: string;
 };
 
-/** Client-writable task fields; server assigns projectId, teamId, createdBy. */
 export type TaskCreateInput = {
   name: string;
   description?: string;

@@ -48,14 +48,14 @@ function MobileNav({
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-foreground/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 md:hidden" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-bg-base/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 md:hidden" />
         <Dialog.Content
           className="fixed inset-x-0 top-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-2 data-[state=closed]:slide-out-to-top-2 md:hidden focus:outline-none"
           style={drawerSafeAreaStyle}
         >
           <Dialog.Title className="sr-only">Mobile navigation</Dialog.Title>
 
-          <div className="rounded-3xl bg-background p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_24px_70px_rgba(15,23,42,0.18)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_24px_70px_rgba(0,0,0,0.45)]">
+          <div className="rounded-3xl border border-border bg-bg-elevated p-6">
             <div className="flex items-center justify-between">
               <Logo size="sm" onClick={closeMenu} />
               <Dialog.Close asChild>

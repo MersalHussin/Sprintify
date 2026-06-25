@@ -9,11 +9,8 @@ export interface StepItem {
 }
 
 export interface StepperProps {
-  /** Array of steps to display */
   steps: StepItem[];
-  /** Current active step (0-indexed) */
   currentStep: number;
-  /** Called when a completed step is clicked */
   onStepClick?: (stepIndex: number) => void;
   className?: string;
 }

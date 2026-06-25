@@ -5,7 +5,6 @@ import { handleResponse } from "../lib/response-handler";
 
 type ObjectIdParams = Record<string, string>;
 
-/** Rejects malformed MongoDB ObjectIds before they reach Mongoose (prevents CastError 500s). */
 export function validateObjectId(...paramNames: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const params = req.params as ObjectIdParams;

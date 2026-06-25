@@ -29,7 +29,7 @@ function FeatureCard({
   children,
 }: FeatureCardProps) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-3xl bg-card shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_18px_50px_rgba(15,23,42,0.06)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_18px_50px_rgba(0,0,0,0.35)] sm:flex-row">
+    <article className="flex flex-col overflow-hidden rounded-3xl border border-border bg-bg-surface sm:flex-row">
       <div className="flex w-full items-center justify-center p-4 sm:w-2/5">
         <img
           src={imageSrc}

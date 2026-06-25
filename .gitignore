@@ -63,8 +63,16 @@ ehthumbs.db
 # =========================
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+tests/.auth/
 
 # =========================
 # 7. Vercel / Deployment
 # =========================
 .vercel/
+
+playwright-report
+.fallow
+scripts

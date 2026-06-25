@@ -59,31 +59,31 @@ const STATUS_COLUMNS: Omit<Column, "cards">[] = [
     id: "Backlog",
     title: "Backlog",
     icon: <ListTodo className="size-4" />,
-    color: "bg-slate-500/15 text-slate-700",
+    color: "bg-bg-subtle text-text-secondary",
   },
   {
     id: "To Do",
     title: "To Do",
     icon: <AlertCircle className="size-4" />,
-    color: "bg-blue-500/15 text-blue-700",
+    color: "bg-accent-subtle text-accent",
   },
   {
     id: "In Progress",
     title: "In Progress",
     icon: <Clock className="size-4" />,
-    color: "bg-amber-500/15 text-amber-700",
+    color: "bg-accent-subtle/80 text-accent",
   },
   {
     id: "Review",
     title: "Review",
     icon: <Eye className="size-4" />,
-    color: "bg-purple-500/15 text-purple-700",
+    color: "bg-priority-urgent text-priority-urgent-foreground",
   },
   {
     id: "Done",
     title: "Done",
     icon: <CheckCircle2 className="size-4" />,
-    color: "bg-emerald-500/15 text-emerald-700",
+    color: "bg-priority-low text-priority-low-foreground",
   },
 ];
 
@@ -117,9 +117,9 @@ function buildColumns(tasks: ApiTask[]): Column[] {
 
 function PriorityBadge({ priority }: { priority: Priority }) {
   const styles: Record<Priority, string> = {
-    low: "bg-emerald-100 text-emerald-700",
-    medium: "bg-amber-100 text-amber-700",
-    high: "bg-red-100 text-red-700",
+    low: "bg-priority-low text-priority-low-foreground",
+    medium: "bg-priority-medium text-priority-medium-foreground",
+    high: "bg-priority-high text-priority-high-foreground",
   };
 
   return (

@@ -67,7 +67,7 @@ function Hero() {
                   <li
                     key={avatar.initial}
                     className={cn(
-                      "flex size-9 items-center justify-center rounded-full text-xs font-bold text-white shadow-xs ring-2 ring-background",
+                      "flex size-9 items-center justify-center rounded-full text-xs font-bold text-primary-foreground ring-2 ring-bg-base",
                       avatar.backgroundClass,
                     )}
                   >
@@ -110,7 +110,7 @@ function Hero() {
               height={750}
               loading="eager"
               decoding="async"
-              className="mx-auto w-full max-w-5xl rounded-2xl shadow-2xl outline outline-1 -outline-offset-1 outline-[rgba(0,0,0,0.1)] dark:outline-[rgba(255,255,255,0.1)]"
+              className="mx-auto w-full max-w-5xl rounded-2xl border border-border outline outline-1 -outline-offset-1 outline-border"
             />
           </div>
         </figure>

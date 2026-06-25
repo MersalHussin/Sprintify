@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link, Navigate } from 'react-router';
+import { useState, useEffect, useCallback } from 'react';
+import { Navigate } from 'react-router';
 import { apiFetch } from '@/lib/api';
 import type { GeneratedTask } from '@/types/task';
 import PromptInput from '@/components/pages/ai/PromptInput';
@@ -7,6 +7,7 @@ import TemplateCards from '@/components/pages/ai/TemplateCards';
 import RecentGenerations from '@/components/pages/ai/RecentGenerations';
 import GeneratedTasksPanel from '@/components/pages/ai/GeneratedTasksPanel';
 import type { GeneratedTaskItem } from '@/components/pages/ai/GeneratedTasksPanel';
+import { PageMessage } from '@/components/shared/page-message';
 import {
   dismissGeneration,
   getGeneration,
@@ -247,18 +248,12 @@ export default function AIPage() {
 
   if (noTeams) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center py-16 px-8 text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-2">No workspace found</h2>
-        <p className="text-muted-foreground mb-6 max-w-md">
-          Create a workspace first to use AI task generation.
-        </p>
-        <Link
-          to="/workspaces"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-xl transition-colors"
-        >
-          Go to Workspaces
-        </Link>
-      </div>
+      <PageMessage
+        title="No workspace found"
+        description="Create a workspace first to use AI task generation."
+        actionLabel="Go to Workspaces"
+        actionTo="/workspaces"
+      />
     );
   }
 
@@ -293,18 +288,13 @@ export default function AIPage() {
         )}
 
         {projects.length === 0 ? (
-          <div className="flex flex-col items-center text-center py-12">
-            <h2 className="text-2xl font-bold text-foreground mb-2">No projects yet</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Create a board in your workspace before generating tasks with AI.
-            </p>
-            <Link
-              to="/workspaces"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-xl transition-colors"
-            >
-              Go to Workspaces
-            </Link>
-          </div>
+          <PageMessage
+            className="py-12"
+            title="No projects yet"
+            description="Create a board in your workspace before generating tasks with AI."
+            actionLabel="Go to Workspaces"
+            actionTo="/workspaces"
+          />
         ) : (
           <>
             <PromptInput

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, User } from "lucide-react";
@@ -12,6 +12,7 @@ import { registerSchema, type RegisterFormValues } from "@/models/auth-schemas.z
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
 import { getRedirectPath } from "@/lib/redirect-after-auth";
+import { getAuthErrorMessage } from "@/lib/auth-error";
 
 const Register = () => {
   const { user, signUpWithEmail, refreshProfile } = useAuth();
@@ -41,7 +42,6 @@ const Register = () => {
       setLoading(true);
       await signUpWithEmail(data.email, data.password, data.username);
       
-      // Update backend with the user's name
       try {
         await apiFetch('/users/me', {
           method: 'PATCH',
@@ -53,9 +53,9 @@ const Register = () => {
       }
       
       navigate(redirectTo, { replace: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      setAuthError(error.message || "An error occurred during registration.");
+      setAuthError(getAuthErrorMessage(error, "An error occurred during registration."));
     } finally {
       setLoading(false);
     }

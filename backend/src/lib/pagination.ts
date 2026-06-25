@@ -22,7 +22,6 @@ type PaginationDefaults = {
 
 const DEFAULTS: PaginationDefaults = { page: 1, limit: 50, maxLimit: 200 };
 
-/** Returns null when the client omits both page and limit — preserves unpaginated responses. */
 export function parseOptionalPagination(
   query: Record<string, unknown>,
   defaults: Partial<PaginationDefaults> = {},

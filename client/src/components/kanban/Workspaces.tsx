@@ -102,14 +102,14 @@ export default function Workspaces() {
   };
 
   if (loading) {
-    return <div className="p-12 text-gray-500">Loading workspaces...</div>;
+    return <div className="p-12 text-text-secondary">Loading workspaces...</div>;
   }
 
   return (
     <div className="flex-1 flex flex-col p-8 md:p-12 overflow-y-auto">
       <div className="max-w-6xl w-full mx-auto">        
         {projects.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-text-secondary">
             <p className="text-lg font-medium mb-2">No boards yet</p>
             <p className="text-sm mb-6">Create your first workspace board to get started.</p>
           </div>
@@ -121,7 +121,7 @@ export default function Workspaces() {
             <div 
               key={project._id}
               onClick={() => navigate(`/board/${project._id}`)}
-              className="h-36 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-850 text-white p-5 rounded-2xl font-bold text-xl cursor-pointer shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 flex flex-col justify-between group relative"
+              className="h-36 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-850 text-primary-foreground p-5 rounded-2xl font-bold text-xl cursor-pointer border border-border-strong transition-colors duration-150 transform hover:-translate-y-1 flex flex-col justify-between group relative"
             >
               <button
                 onClick={(e) => handleDeleteBoard(e, project._id)}
@@ -132,14 +132,14 @@ export default function Workspaces() {
               </button>
 
               <span className="truncate pr-6">{project.name}</span>
-              <span className="text-xs font-normal text-blue-200 group-hover:text-white transition-colors">Open Board →</span>
+              <span className="text-xs font-normal text-blue-200 group-hover:text-primary-foreground transition-colors duration-150">Open Board →</span>
             </div>
           ))}
 
           {/* بوكس الإضافة المتقطع */}
           <div 
             onClick={handleAddBoard}
-            className="h-36 bg-gray-200/50 dark:bg-slate-800/50 hover:bg-gray-200/80 dark:hover:bg-slate-800/80 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400 font-semibold cursor-pointer transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400"
+            className="h-36 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 bg-bg-subtle/50 text-text-secondary font-semibold cursor-pointer transition-colors duration-150 hover:border-accent hover:bg-bg-subtle hover:text-accent"
           >
             <FaPlus size={20} />
             <span>Add New Board</span>

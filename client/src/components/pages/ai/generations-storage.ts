@@ -27,9 +27,7 @@ function readAll(): StoredGeneration[] {
 function writeAll(entries: StoredGeneration[]): void {
   try {
     localStorage.setItem(GENERATIONS_STORAGE_KEY, JSON.stringify(entries));
-  } catch {
-    // ignore storage failures
-  }
+  } catch {}
 }
 
 function taskMeta(count: number): string {

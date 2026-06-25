@@ -5,7 +5,6 @@ import type { TeamDocument } from "../models/team";
 import type { AuthUser } from "./user";
 import type { TeamRole } from "./team";
 
-/** Domain shape shared by AI services and HTTP middleware — not prompt-specific. */
 export type PromptTeamMember = {
   id: string;
   name: string;

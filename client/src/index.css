@@ -6,84 +6,34 @@
 @import "@fontsource/instrument-serif/400.css";
 @import "@fontsource/instrument-serif/400-italic.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* Sprintify brand theme tokens for shadcn/ui (oklch) */
-:root {
-  --background: oklch(98.11% 0.009 286.23);
-  --foreground: oklch(18.22% 0.000 0);
+/* ── Semantic surface tokens (light defaults) ───────────────────────────── */
+@theme {
+  --color-bg-base: #f3f5f9;
+  --color-bg-surface: #fafbfc;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle: #e9edf4;
+  --color-bg-inset: #e3e8f0;
+  --color-border: #d5dce8;
+  --color-border-strong: #a8b4c8;
+  --color-text-primary: #161b26;
+  --color-text-secondary: #4e5a6e;
+  --color-text-muted: #7a8699;
+  --color-text-disabled: #a8b2c3;
+  --color-accent: #3b6fd9;
+  --color-accent-subtle: #e4edfc;
+  --color-success: #0d9f6e;
+  --color-destructive: #d64545;
 
-  --card: oklch(99.92% 0.001 197.14);
-  --card-foreground: oklch(0.145 0 0);
-
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-
-  /* Brand primary — Sprintify blue (#2563eb) */
-  --primary: oklch(48.02% 0.201 260.48);
-  --primary-foreground: oklch(0.985 0 0);
-
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-
-  --muted: oklch(97% 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-
-  /* Brand accent — warm amber */
-  --accent: oklch(92% 0.1 75);
-  --accent-foreground: oklch(0.205 0 0);
-
-  --destructive: oklch(56.80% 0.200 26.41);
-  --destructive-foreground: oklch(0.985 0 0);
-
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.546 0.215 263.83);
-
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-
-  --radius: 0.625rem;
-
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.546 0.215 263.83);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.546 0.215 263.83);
-
-  /* Avatar palette — semantic tokens for hero / user avatars */
-  --avatar-1: oklch(0.55 0.2 260);
-  --avatar-2: oklch(0.55 0.18 300);
-  --avatar-3: oklch(0.65 0.2 350);
-  --avatar-4: oklch(0.35 0.05 260);
-
-  /* Task priority badges */
-  --priority-urgent: #ede9fe;
-  --priority-urgent-foreground: #5b21b6;
-  --priority-high: #ffe4ec;
-  --priority-high-foreground: #9f1239;
-  --priority-medium: #e8f1ff;
-  --priority-medium-foreground: #2463c8;
-  --priority-low: #dcfce7;
-  --priority-low-foreground: #166534;
-  --priority-done-foreground: #10b981;
-}
-
-@theme inline {
-  /* Sprintify typography: Geist (sans) + Instrument Serif (display) */
+  /* Sprintify typography */
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-heading: "Instrument Serif", ui-serif, Georgia, "Times New Roman",
     serif;
   --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", Consolas, monospace;
 
-  /* Color tokens bound to shadcn CSS variables */
+  /* shadcn/ui Tailwind bindings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -96,11 +46,8 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -130,7 +77,6 @@
   --color-priority-low-foreground: var(--priority-low-foreground);
   --color-priority-done-foreground: var(--priority-done-foreground);
 
-  /* Border radius scale */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -140,9 +86,103 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Dark mode — reassign same token names ──────────────────────────────── */
+.dark {
+  --color-bg-base: #080a0f;
+  --color-bg-inset: #0c0f16;
+  --color-bg-surface: #11151d;
+  --color-bg-subtle: #171c27;
+  --color-bg-elevated: #1d2431;
+  --color-border: #2a3142;
+  --color-border-strong: #3e4a63;
+  --color-text-primary: #e4e7ee;
+  --color-text-secondary: #949bab;
+  --color-text-muted: #636d80;
+  --color-text-disabled: #454d5e;
+  --color-accent: #6b9fff;
+  --color-accent-subtle: #1a2744;
+  --color-success: #3ecf8e;
+  --color-destructive: #f07171;
+
+  --priority-urgent: #2a1f4a;
+  --priority-urgent-foreground: #c4b5fd;
+  --priority-high: #3b1528;
+  --priority-high-foreground: #fda4af;
+  --priority-medium: #152238;
+  --priority-medium-foreground: #93c5fd;
+  --priority-low: #142a1f;
+  --priority-low-foreground: #86efac;
+  --priority-done-foreground: #3ecf8e;
+}
+
+/* ── shadcn bridge — maps legacy vars to semantic tokens ──────────────────── */
+:root {
+  --background: var(--color-bg-base);
+  --foreground: var(--color-text-primary);
+
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text-primary);
+
+  --popover: var(--color-bg-elevated);
+  --popover-foreground: var(--color-text-primary);
+
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-bg-base);
+
+  --secondary: var(--color-bg-subtle);
+  --secondary-foreground: var(--color-text-primary);
+
+  --muted: var(--color-bg-subtle);
+  --muted-foreground: var(--color-text-secondary);
+
+  --accent: var(--color-bg-subtle);
+  --accent-foreground: var(--color-text-primary);
+
+  --destructive: var(--color-destructive);
+  --destructive-foreground: var(--color-bg-base);
+
+  --border: var(--color-border);
+  --input: var(--color-bg-inset);
+  --ring: var(--color-accent);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --radius: 0.625rem;
+
+  --sidebar: var(--color-bg-surface);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-foreground: var(--color-bg-base);
+  --sidebar-accent: var(--color-bg-subtle);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-accent);
+
+  --avatar-1: oklch(0.55 0.2 260);
+  --avatar-2: oklch(0.55 0.18 300);
+  --avatar-3: oklch(0.65 0.2 350);
+  --avatar-4: oklch(0.35 0.05 260);
+
+  --priority-urgent: #ede9fe;
+  --priority-urgent-foreground: #5b21b6;
+  --priority-high: #ffe4ec;
+  --priority-high-foreground: #9f1239;
+  --priority-medium: #e8f1ff;
+  --priority-medium-foreground: #2463c8;
+  --priority-low: #dcfce7;
+  --priority-low-foreground: #166534;
+  --priority-done-foreground: #0d9f6e;
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-bg-base);
   }
 
   html {
@@ -156,7 +196,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    @apply bg-background text-foreground;
+    @apply bg-bg-base text-text-primary;
   }
 
   h1,
@@ -169,7 +209,12 @@
   }
 
   ::selection {
-    background-color: color-mix(in oklch, var(--primary) 70%, transparent);
-    color: var(--primary-foreground);
+    background-color: var(--color-accent-subtle);
+    color: var(--color-text-primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 }

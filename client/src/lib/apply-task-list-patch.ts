@@ -1,5 +1,5 @@
 import type { KanbanTaskCardData } from "@/components/kanban/task-card"
-import type { TaskListPatch } from "@/components/kanban/task-detail-modal"
+import type { TaskListPatch } from "@/types/task"
 
 function mergeTaskPatch(task: KanbanTaskCardData, patch: TaskListPatch): KanbanTaskCardData {
   return {
@@ -15,9 +15,7 @@ function mergeTaskPatch(task: KanbanTaskCardData, patch: TaskListPatch): KanbanT
 }
 
 type ApplyTaskListPatchOptions = {
-  /** When set, tasks whose status no longer matches are removed from the list. */
   statusFilter?: string
-  /** When set, tasks moved to this status are removed from the list (e.g. Backlog on sprint board). */
   excludeStatus?: string
 }
 

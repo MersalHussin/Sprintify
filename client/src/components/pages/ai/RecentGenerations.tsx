@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { FaArrowUpRightFromSquare, FaLayerGroup } from 'react-icons/fa6';
+import { useState, useEffect } from 'react';
+import { FaLayerGroup } from 'react-icons/fa6';
 import { RotateCcw, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared/empty-state';
 import { cn } from '@/lib/utils';
 import {
   isGenerationRestorable,
@@ -58,7 +59,7 @@ export default function RecentGenerations({
       <h2 className="text-xl font-bold text-foreground mb-6">Recent Generations</h2>
 
       {generations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 bg-card rounded-2xl border border-border border-dashed">
+        <EmptyState variant="card">
           <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-4">
             <FaLayerGroup />
           </div>
@@ -66,7 +67,7 @@ export default function RecentGenerations({
           <p className="text-muted-foreground/70 text-xs mt-1">
             Generate tasks above to see them here.
           </p>
-        </div>
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-3">
           {generations.map((item) => {
@@ -114,7 +115,7 @@ export default function RecentGenerations({
 
                 <div className="flex items-center gap-3 shrink-0 ml-4">
                   {item.status === 'COMPLETED' ? (
-                    <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                    <span className="bg-success/10 text-success text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">
                       Completed
                     </span>
                   ) : isExpired ? (

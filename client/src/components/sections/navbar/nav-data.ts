@@ -3,7 +3,6 @@ import type * as React from "react";
 export type NavLink = {
   readonly label: string;
   readonly href: string;
-  /** When set, clicking this link triggers a named action instead of navigation. */
   readonly action?: "contact-modal";
 };
 

@@ -12,7 +12,8 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 import { KanbanTaskCard, type KanbanTaskCardData } from "./task-card";
-import { TaskDetailModal, type TaskListPatch } from "./task-detail-modal";
+import { TaskDetailModal } from "./task-detail-modal";
+import type { TaskListPatch } from "@/types/task";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyTaskListPatch } from "@/lib/apply-task-list-patch";
 import { reorderBoardTasks, sortTasksByColumnOrder } from "@/lib/reorder-board-tasks";
@@ -45,7 +46,7 @@ function BoardSkeleton() {
           {SPRINT_COLUMNS.map((column) => (
             <div
               key={column.id}
-              className="w-80 shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col"
+              className="w-80 shrink-0 bg-bg-subtle/50 border border-border rounded-xl flex flex-col"
             >
               <div className="p-3 flex justify-between items-center">
                 <Skeleton className="h-5 w-24" />
@@ -56,7 +57,7 @@ function BoardSkeleton() {
                   <Skeleton key={cardIndex} className={`${height} rounded-lg`} />
                 ))}
               </div>
-              <div className="p-3 border-t border-gray-200/50">
+              <div className="p-3 border-t border-border/50">
                 <Skeleton className="h-9 w-full rounded-lg" />
               </div>
             </div>
@@ -127,9 +128,7 @@ export default function Board() {
       const activeSprint = sprints.find(
         (s: { status: string }) => s.status !== "completed",
       );
-      setSprintSubtitle(
-        activeSprint ? `${activeSprint.name} • Active Board` : "No active sprint",
-      );
+      setSprintSubtitle("Active Board");
     } catch (error) {
       console.error("Error fetching data:", error);
       setSprintSubtitle("No active sprint");
@@ -236,7 +235,7 @@ export default function Board() {
         {/* رأس البورد */}
         <div className="flex justify-between items-center mb-8 shrink-0">
           <div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-text-secondary text-sm">
               {sprintSubtitle}
             </p>
           </div>
@@ -249,15 +248,15 @@ export default function Board() {
               {SPRINT_COLUMNS.map((column) => (
                 <div
                   key={column.id}
-                  className="w-80 shrink-0 bg-gray-100/50 border border-gray-200 rounded-xl flex flex-col max-h-full group"
+                  className="w-80 shrink-0 bg-bg-subtle/50 border border-border rounded-xl flex flex-col max-h-full group"
                 >
                   {/* هيدر العمود */}
-                  <div className="p-3 flex justify-between items-center hover:bg-gray-200/50 rounded-t-xl transition-colors">
-                    <h3 className="font-bold text-gray-700 flex-1">
+                  <div className="p-3 flex justify-between items-center hover:bg-bg-subtle rounded-t-xl transition-colors duration-150">
+                    <h3 className="font-bold text-text-primary flex-1">
                       {column.title}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full font-bold">
+                      <span className="bg-bg-inset text-text-secondary text-xs px-2 py-1 rounded-full font-bold">
                         {
                           tasks.filter((task) => task.status === column.id)
                             .length
@@ -305,10 +304,10 @@ export default function Board() {
                   </Droppable>
 
                   {/* زرار إضافة تاسك سفلي */}
-                  <div className="p-3 border-t border-gray-200/50 mt-auto">
+                  <div className="p-3 border-t border-border/50 mt-auto">
                     <button
                       onClick={() => handleAddTask(column.id)}
-                      className="w-full flex items-center justify-center gap-2 text-gray-500 hover:text-gray-800 hover:bg-gray-200/50 py-2 rounded-lg transition-colors text-sm font-medium"
+                      className="w-full flex items-center justify-center gap-2 text-text-secondary hover:text-text-primary hover:bg-bg-subtle py-2 rounded-lg transition-colors duration-150 text-sm font-medium"
                     >
                       <FaPlus />
                       Add Task

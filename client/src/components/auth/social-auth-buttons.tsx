@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { GithubIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
+import { getAuthErrorMessage } from "@/lib/auth-error";
 
 interface SocialAuthButtonsProps {
   onError?: (error: string | null) => void;
@@ -20,10 +21,10 @@ function SocialAuthButtons({ onError, redirectTo = "/dashboard" }: SocialAuthBut
       setLoadingGoogle(true);
       await signInWithGoogle();
       navigate(redirectTo);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       if (onError) {
-        onError(error.message || "Google sign-in failed.");
+        onError(getAuthErrorMessage(error, "Google sign-in failed."));
       }
     } finally {
       setLoadingGoogle(false);
