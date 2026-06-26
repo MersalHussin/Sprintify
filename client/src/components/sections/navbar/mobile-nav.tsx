@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Menu, X } from "lucide-react";
 import { Dialog } from "radix-ui";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useContactModal } from "@/context/contact-modal-context";
 
@@ -38,13 +39,15 @@ function MobileNav({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-lg"
           aria-label="Open menu"
-          className="inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:hidden"
+          className="rounded-full md:hidden"
         >
           <Menu aria-hidden="true" className="size-5" />
-        </button>
+        </Button>
       </Dialog.Trigger>
 
       <Dialog.Portal>
@@ -59,34 +62,41 @@ function MobileNav({
             <div className="flex items-center justify-between">
               <Logo size="sm" onClick={closeMenu} />
               <Dialog.Close asChild>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-lg"
                   aria-label="Close menu"
-                  className="inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="rounded-full"
                 >
                   <X aria-hidden="true" className="size-5" />
-                </button>
+                </Button>
               </Dialog.Close>
             </div>
 
             <ul className="mt-6 flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    onClick={(event) => {
-                      if (link.action === "contact-modal") {
-                        event.preventDefault();
-                        closeMenu();
-                        openContact();
-                      } else {
-                        handleAnchorClick(event, link.href, closeMenu);
-                      }
-                    }}
-                    className="flex h-12 items-center rounded-2xl px-4 text-base font-medium text-foreground transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="h-12 w-full justify-start rounded-2xl px-4 text-base font-medium"
                   >
-                    {link.label}
-                  </a>
+                    <a
+                      href={link.href}
+                      onClick={(event) => {
+                        if (link.action === "contact-modal") {
+                          event.preventDefault();
+                          closeMenu();
+                          openContact();
+                        } else {
+                          handleAnchorClick(event, link.href, closeMenu);
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </a>
+                  </Button>
                 </li>
               ))}
             </ul>

@@ -1,4 +1,11 @@
-import { useEffect, useState } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react"
 import { Link, useLocation, useParams } from "react-router"
 import {
   ChevronRight,
@@ -12,6 +19,7 @@ import {
   Users,
 } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { useContactModal } from "@/context/contact-modal-context"
 import { apiFetch } from "@/lib/api"
 import {
@@ -46,7 +54,40 @@ interface Project {
   name: string
 }
 
-export default function AppSidebar() {
+type AppSidebarContextValue = {
+  teams: Team[]
+  currentProject: Project | null
+  isProjectManager: boolean
+  projectOpen: boolean
+  setProjectOpen: (open: boolean) => void
+  openTeams: Record<string, boolean>
+  setOpenTeams: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+  openContact: () => void
+  teamProjectsPath: (teamId: string) => string
+  teamMembersPath: (teamId: string) => string
+  isTeamProjectsRoute: (teamId: string) => boolean
+  isTeamMembersRoute: (teamId: string) => boolean
+  boardPath: string
+  backlogPath: string
+  isBoardRoute: boolean
+  isBacklogRoute: boolean
+  isProjectRoute: boolean
+  isDashboard: boolean
+  isMyTasks: boolean
+  isSettings: boolean
+}
+
+const AppSidebarContext = createContext<AppSidebarContextValue | null>(null)
+
+function useAppSidebar() {
+  const context = useContext(AppSidebarContext)
+  if (!context) {
+    throw new Error("AppSidebar sub-components must be used within AppSidebar.")
+  }
+  return context
+}
+
+function AppSidebar({ children }: { children: ReactNode }) {
   const { open: openContact } = useContactModal()
   const location = useLocation()
   const { boardId, teamId: routeTeamId } = useParams()
@@ -123,175 +164,287 @@ export default function AppSidebar() {
   const isMyTasks = location.pathname === "/my-tasks"
   const isSettings = location.pathname === "/settings"
 
+  const value = useMemo<AppSidebarContextValue>(
+    () => ({
+      teams,
+      currentProject,
+      isProjectManager,
+      projectOpen,
+      setProjectOpen,
+      openTeams,
+      setOpenTeams,
+      openContact,
+      teamProjectsPath,
+      teamMembersPath,
+      isTeamProjectsRoute,
+      isTeamMembersRoute,
+      boardPath,
+      backlogPath,
+      isBoardRoute,
+      isBacklogRoute,
+      isProjectRoute,
+      isDashboard,
+      isMyTasks,
+      isSettings,
+    }),
+    [
+      teams,
+      currentProject,
+      isProjectManager,
+      projectOpen,
+      openTeams,
+      openContact,
+      boardPath,
+      backlogPath,
+      isBoardRoute,
+      isBacklogRoute,
+      isProjectRoute,
+      isDashboard,
+      isMyTasks,
+      isSettings,
+      location.pathname,
+      routeTeamId,
+    ],
+  )
+
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <Link to="/workspaces" className="flex items-center gap-2 px-2 py-1">
+    <AppSidebarContext.Provider value={value}>
+      <Sidebar>{children}</Sidebar>
+    </AppSidebarContext.Provider>
+  )
+}
+
+function AppSidebarBrand() {
+  return (
+    <SidebarHeader>
+      <Button variant="ghost" asChild className="h-auto justify-start px-2 py-1">
+        <Link to="/workspaces">
           <img
             src="/assets/images/logo.webp"
             alt="Sprintify"
             className="h-7 w-auto rounded object-contain"
           />
         </Link>
-      </SidebarHeader>
+      </Button>
+    </SidebarHeader>
+  )
+}
 
-      <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isMyTasks}>
-                  <Link to="/my-tasks">
-                    <ClipboardList className="text-sidebar-foreground/70" />
-                    <span>My Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+function AppSidebarMyTasksGroup() {
+  const { isMyTasks } = useAppSidebar()
 
-      <SidebarContent>
-        <SidebarGroup>
-          <Collapsible open={projectOpen} onOpenChange={setProjectOpen}>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger className="group/label flex w-full items-center">
-                <span className="truncate">Current Project</span>
-                <ChevronRight className="ml-auto size-3.5 transition-transform group-data-[state=open]/label:rotate-90" />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton isActive={isProjectRoute} className="font-medium">
-                      <FolderKanban className="text-sidebar-foreground/70" />
-                      <span className="truncate">{currentProject?.name ?? "No project"}</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={isBacklogRoute}>
-                          <Link to={backlogPath}>
-                            <ListTodo />
-                            <span>Backlog</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={isBoardRoute}>
-                          <Link to={boardPath}>
-                            <LayoutDashboard />
-                            <span>Sprint</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      {isProjectManager ? (
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton asChild isActive={isDashboard}>
-                            <Link to="/dashboard">
-                              <Sparkles />
-                              <span>Task Generation AI</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ) : null}
-                    </SidebarMenuSub>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Teams</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {teams.length === 0 ? (
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled>
-                    <Users />
-                    <span>No teams yet</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ) : (
-                teams.map((team) => {
-                  const teamOpen = openTeams[team._id] ?? false
-                  const teamActive =
-                    isTeamProjectsRoute(team._id) || isTeamMembersRoute(team._id)
-
-                  return (
-                    <Collapsible
-                      key={team._id}
-                      className="group/collapsible"
-                      open={teamOpen}
-                      onOpenChange={(open) =>
-                        setOpenTeams((prev) => ({ ...prev, [team._id]: open }))
-                      }
-                    >
-                      <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton isActive={teamActive}>
-                            <ChevronRight className="size-3.5 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                            <Users className="text-sidebar-foreground/70" />
-                            <span className="truncate">{team.name}</span>
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenuSub>
-                            <SidebarMenuSubItem>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={isTeamProjectsRoute(team._id)}
-                              >
-                                <Link to={teamProjectsPath(team._id)}>
-                                  <FolderKanban />
-                                  <span>Projects</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                            <SidebarMenuSubItem>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={isTeamMembersRoute(team._id)}
-                              >
-                                <Link to={teamMembersPath(team._id)}>
-                                  <Users />
-                                  <span>Team members</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </SidebarMenuItem>
-                    </Collapsible>
-                  )
-                })
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter>
+  return (
+    <SidebarGroup>
+      <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => openContact()}>
-              <CircleHelp />
-              <span>Support</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isSettings}>
-              <Link to="/settings">
-                <Settings />
-                <span>User Settings</span>
+            <SidebarMenuButton asChild isActive={isMyTasks}>
+              <Link to="/my-tasks">
+                <ClipboardList className="text-sidebar-foreground/70" />
+                <span>My Tasks</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
+
+function AppSidebarProjectGroup() {
+  const {
+    currentProject,
+    isProjectManager,
+    projectOpen,
+    setProjectOpen,
+    boardPath,
+    backlogPath,
+    isProjectRoute,
+    isBacklogRoute,
+    isBoardRoute,
+    isDashboard,
+  } = useAppSidebar()
+
+  return (
+    <SidebarGroup>
+      <Collapsible open={projectOpen} onOpenChange={setProjectOpen}>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger className="group/label flex w-full items-center">
+            <span className="truncate">Current Project</span>
+            <ChevronRight className="ml-auto size-3.5 transition-transform group-data-[state=open]/label:rotate-90" />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={isProjectRoute} className="font-medium">
+                  <FolderKanban className="text-sidebar-foreground/70" />
+                  <span className="truncate">{currentProject?.name ?? "No project"}</span>
+                </SidebarMenuButton>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild isActive={isBacklogRoute}>
+                      <Link to={backlogPath}>
+                        <ListTodo />
+                        <span>Backlog</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild isActive={isBoardRoute}>
+                      <Link to={boardPath}>
+                        <LayoutDashboard />
+                        <span>Sprint</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  {isProjectManager ? (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild isActive={isDashboard}>
+                        <Link to="/dashboard">
+                          <Sparkles />
+                          <span>Task Generation AI</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ) : null}
+                </SidebarMenuSub>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarGroup>
+  )
+}
+
+function AppSidebarTeamsGroup() {
+  const {
+    teams,
+    openTeams,
+    setOpenTeams,
+    teamProjectsPath,
+    teamMembersPath,
+    isTeamProjectsRoute,
+    isTeamMembersRoute,
+  } = useAppSidebar()
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Teams</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {teams.length === 0 ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton disabled>
+                <Users />
+                <span>No teams yet</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : (
+            teams.map((team) => {
+              const teamOpen = openTeams[team._id] ?? false
+              const teamActive =
+                isTeamProjectsRoute(team._id) || isTeamMembersRoute(team._id)
+
+              return (
+                <Collapsible
+                  key={team._id}
+                  className="group/collapsible"
+                  open={teamOpen}
+                  onOpenChange={(open) =>
+                    setOpenTeams((prev) => ({ ...prev, [team._id]: open }))
+                  }
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton isActive={teamActive}>
+                        <ChevronRight className="size-3.5 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                        <Users className="text-sidebar-foreground/70" />
+                        <span className="truncate">{team.name}</span>
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isTeamProjectsRoute(team._id)}
+                          >
+                            <Link to={teamProjectsPath(team._id)}>
+                              <FolderKanban />
+                              <span>Projects</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isTeamMembersRoute(team._id)}
+                          >
+                            <Link to={teamMembersPath(team._id)}>
+                              <Users />
+                              <span>Team members</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )
+            })
+          )}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}
+
+function AppSidebarSupportMenu() {
+  const { openContact, isSettings } = useAppSidebar()
+
+  return (
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton onClick={() => openContact()}>
+            <CircleHelp />
+            <span>Support</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild isActive={isSettings}>
+            <Link to="/settings">
+              <Settings />
+              <span>User Settings</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  )
+}
+
+AppSidebar.Brand = AppSidebarBrand
+AppSidebar.MyTasksGroup = AppSidebarMyTasksGroup
+AppSidebar.ProjectGroup = AppSidebarProjectGroup
+AppSidebar.TeamsGroup = AppSidebarTeamsGroup
+AppSidebar.Separator = SidebarSeparator
+AppSidebar.SupportMenu = AppSidebarSupportMenu
+
+export default function AppSidebarLayout() {
+  return (
+    <AppSidebar>
+      <AppSidebar.Brand />
+      <AppSidebar.MyTasksGroup />
+      <SidebarContent>
+        <AppSidebar.ProjectGroup />
+        <AppSidebar.Separator />
+        <AppSidebar.TeamsGroup />
+      </SidebarContent>
+      <AppSidebar.SupportMenu />
+    </AppSidebar>
   )
 }

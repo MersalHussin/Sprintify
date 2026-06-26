@@ -5,6 +5,7 @@ import { ClipboardList } from "lucide-react"
 import { KanbanTaskCard, type KanbanTaskCardData } from "@/components/kanban/task-card"
 import { TaskDetailModal } from "@/components/kanban/task-detail-modal"
 import { EmptyState } from "@/components/shared/empty-state"
+import { Button } from "@/components/ui/button"
 import { applyTaskListPatch } from "@/lib/apply-task-list-patch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { apiFetch } from "@/lib/api"
@@ -132,17 +133,20 @@ export default function MyTasks() {
       {loading ? (
         <MyTasksSkeleton />
       ) : totalTasks === 0 ? (
-        <EmptyState
-          variant="page"
-          icon={<ClipboardList className="size-10 text-muted-foreground/60" aria-hidden="true" />}
-          title="No assigned tasks"
-          description="When a task is assigned to you, it will appear here grouped by project."
-          action={
-            <Link to="/workspaces" className="text-sm font-medium text-primary hover:underline">
-              Browse workspaces
-            </Link>
-          }
-        />
+        <EmptyState variant="page">
+          <EmptyState.Icon>
+            <ClipboardList className="size-10 text-muted-foreground/60" aria-hidden="true" />
+          </EmptyState.Icon>
+          <EmptyState.Title>No assigned tasks</EmptyState.Title>
+          <EmptyState.Description>
+            When a task is assigned to you, it will appear here grouped by project.
+          </EmptyState.Description>
+          <EmptyState.Action>
+            <Button variant="link" asChild className="text-sm font-medium">
+              <Link to="/workspaces">Browse workspaces</Link>
+            </Button>
+          </EmptyState.Action>
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-10">
           {groups.map((group) => (

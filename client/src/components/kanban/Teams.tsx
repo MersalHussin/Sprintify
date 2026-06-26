@@ -40,19 +40,20 @@ function TeamInviteCard({ invite }: { invite: TeamInvite }) {
 
 function AddMemberCard({ onClick }: { onClick: () => void }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
       onClick={onClick}
-      className="border-2 border-dashed border-border rounded-xl bg-bg-surface p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-accent hover:bg-accent-subtle/50 transition-colors duration-150 group h-full min-h-[220px]"
+      className="group h-full min-h-[220px] w-full flex-col gap-3 rounded-xl border-2 border-dashed border-border bg-bg-surface p-6 hover:border-accent hover:bg-accent-subtle/50"
     >
-      <div className="w-12 h-12 rounded-xl bg-bg-subtle group-hover:bg-accent-subtle flex items-center justify-center text-text-muted group-hover:text-accent transition-colors duration-150">
+      <div className="flex size-12 items-center justify-center rounded-xl bg-bg-subtle text-text-muted transition-colors duration-150 group-hover:bg-accent-subtle group-hover:text-accent">
         <FaPlus size={16} />
       </div>
       <div className="text-center">
-        <h3 className="font-bold text-text-primary mb-1">Add new team member</h3>
-        <p className="text-xs text-text-muted font-medium">Invite users to collaborate</p>
+        <h3 className="mb-1 font-bold text-text-primary">Add new team member</h3>
+        <p className="text-xs font-medium text-text-muted">Invite users to collaborate</p>
       </div>
-    </button>
+    </Button>
   )
 }
 

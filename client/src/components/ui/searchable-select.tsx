@@ -3,6 +3,7 @@ import { Popover as PopoverPrimitive } from "radix-ui";
 import { Check, ChevronDown, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type SelectOption = {
@@ -70,16 +71,17 @@ function SearchableSelect({
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <PopoverPrimitive.Trigger asChild>
-        <button
+        <Button
           id={id}
           type="button"
+          variant="outline"
           role="combobox"
           aria-expanded={open}
           aria-controls={id ? `${id}-listbox` : undefined}
           aria-invalid={ariaInvalid}
           aria-describedby={ariaDescribedby}
           className={cn(
-            "flex h-12 w-full items-center justify-between gap-2 rounded-full border border-input bg-transparent px-4 py-2 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
+            "h-12 w-full justify-between rounded-full px-4 text-base font-normal",
             !selected && "text-muted-foreground",
             className,
           )}
@@ -89,7 +91,7 @@ function SearchableSelect({
             aria-hidden="true"
             className="size-5 shrink-0 text-muted-foreground opacity-70"
           />
-        </button>
+        </Button>
       </PopoverPrimitive.Trigger>
 
       <PopoverPrimitive.Portal>
@@ -169,13 +171,14 @@ function SearchableSelect({
 
                 return (
                   <li key={option.value} role="presentation">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       id={id ? `${id}-option-${index}` : undefined}
                       role="option"
                       aria-selected={isSelected}
                       className={cn(
-                        "relative flex w-full cursor-default items-center rounded-xl py-2 pr-8 pl-3 text-base outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:text-foreground",
+                        "relative h-auto w-full justify-start rounded-xl py-2 pr-8 pl-3 text-base font-normal",
                         isSelected && "bg-muted/60",
                         isHighlighted && "bg-muted",
                       )}
@@ -189,7 +192,7 @@ function SearchableSelect({
                           className="absolute right-3 size-4 text-primary"
                         />
                       ) : null}
-                    </button>
+                    </Button>
                   </li>
                 );
               })

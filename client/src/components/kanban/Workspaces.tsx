@@ -3,6 +3,7 @@ import { FaPlus, FaTrash } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 import { useNavigate, useParams } from 'react-router';
 import { apiFetch } from '../../lib/api';
+import { Button } from '@/components/ui/button';
 import { ensureDefaultWorkspaceTeam } from '@/lib/default-workspace';
 import { useSetPageTitle } from '@/context/page-title-context';
 
@@ -123,13 +124,16 @@ export default function Workspaces() {
               onClick={() => navigate(`/board/${project._id}`)}
               className="h-36 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-850 text-primary-foreground p-5 rounded-2xl font-bold text-xl cursor-pointer border border-border-strong transition-colors duration-150 transform hover:-translate-y-1 flex flex-col justify-between group relative"
             >
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={(e) => handleDeleteBoard(e, project._id)}
-                className="absolute top-4 right-4 text-blue-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
+                className="absolute top-4 right-4 text-blue-200 opacity-0 hover:text-red-400 group-hover:opacity-100"
                 title="Delete Board"
               >
                 <FaTrash size={14} />
-              </button>
+              </Button>
 
               <span className="truncate pr-6">{project.name}</span>
               <span className="text-xs font-normal text-blue-200 group-hover:text-primary-foreground transition-colors duration-150">Open Board →</span>

@@ -146,14 +146,16 @@ function KanbanCard({
     <div className="group cursor-pointer rounded-xl border border-border/60 bg-card p-4 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md">
       <div className="mb-3 flex items-start justify-between gap-2">
         <PriorityBadge priority={card.priority} />
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onDelete(card.id)}
-          className="rounded-md p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted hover:text-destructive group-hover:opacity-100"
+          className="text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-destructive"
           aria-label="Delete card"
         >
           <MoreHorizontal className="size-4" />
-        </button>
+        </Button>
       </div>
 
       <h3 className="mb-1 font-sans text-sm font-semibold leading-snug text-foreground">
@@ -218,14 +220,15 @@ function KanbanColumn({
       </div>
 
       <div className="px-3 pb-3 pt-1">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => onAddCard(column.id)}
-          className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 font-sans text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="w-full justify-start gap-2 rounded-xl px-3 py-2.5 font-sans text-sm text-muted-foreground hover:text-foreground"
         >
           <Plus className="size-4" />
           Add a card
-        </button>
+        </Button>
       </div>
     </div>
   );

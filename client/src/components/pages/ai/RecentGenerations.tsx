@@ -60,13 +60,17 @@ export default function RecentGenerations({
 
       {generations.length === 0 ? (
         <EmptyState variant="card">
-          <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center mb-4">
-            <FaLayerGroup />
-          </div>
-          <p className="text-muted-foreground text-sm">No generations yet for this project.</p>
-          <p className="text-muted-foreground/70 text-xs mt-1">
-            Generate tasks above to see them here.
-          </p>
+          <EmptyState.Icon>
+            <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <FaLayerGroup />
+            </div>
+          </EmptyState.Icon>
+          <EmptyState.Content>
+            <p className="text-sm text-muted-foreground">No generations yet for this project.</p>
+            <p className="mt-1 text-xs text-muted-foreground/70">
+              Generate tasks above to see them here.
+            </p>
+          </EmptyState.Content>
         </EmptyState>
       ) : (
         <div className="flex flex-col gap-3">

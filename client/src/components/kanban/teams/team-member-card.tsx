@@ -74,13 +74,15 @@ export function TeamMemberCard({
         {showRoleDropdown ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <Button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-surface px-2.5 py-1 text-xs font-bold capitalize text-text-primary hover:bg-bg-subtle transition-colors duration-150"
+                variant="outline"
+                size="sm"
+                className="h-auto gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold capitalize"
               >
                 {member.role}
                 <FaChevronDown className="size-3 text-text-muted" />
-              </button>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem

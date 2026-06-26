@@ -276,9 +276,11 @@ export default function Settings() {
               </p>
             </div>
 
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={toggleTheme}
-              className="flex items-center gap-2 rounded-lg border border-border bg-bg-subtle px-4 py-2 transition-colors duration-150 hover:bg-bg-inset"
+              className="gap-2"
             >
               {theme === 'dark' ? (
                 <>
@@ -291,7 +293,7 @@ export default function Settings() {
                   <span>Dark Mode</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

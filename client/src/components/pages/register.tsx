@@ -62,13 +62,15 @@ const Register = () => {
   });
 
   return (
-    <AuthLayout
-      title="Welcome aboard!"
-      prompt="Already an existing member?"
-      promptActionLabel="Login"
-      promptActionTo="/login"
-      promptActionState={location.state}
-    >
+    <AuthLayout>
+      <AuthLayout.Title>Welcome aboard!</AuthLayout.Title>
+      <AuthLayout.Prompt>
+        <span className="font-normal">Already an existing member? </span>
+        <AuthLayout.PromptLink to="/login" state={location.state}>
+          Login
+        </AuthLayout.PromptLink>
+      </AuthLayout.Prompt>
+      <AuthLayout.Form>
       <form
         className="flex w-full flex-col gap-4"
         onSubmit={onSubmit}
@@ -162,6 +164,7 @@ const Register = () => {
           <TermsText />
         </FieldGroup>
       </form>
+      </AuthLayout.Form>
     </AuthLayout>
   );
 };

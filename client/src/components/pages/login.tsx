@@ -48,13 +48,15 @@ const Login = () => {
   });
 
   return (
-    <AuthLayout
-      title="Welcome back!"
-      prompt="Don't have an account?"
-      promptActionLabel="Register"
-      promptActionTo="/register"
-      promptActionState={location.state}
-    >
+    <AuthLayout>
+      <AuthLayout.Title>Welcome back!</AuthLayout.Title>
+      <AuthLayout.Prompt>
+        <span className="font-normal">Don&apos;t have an account? </span>
+        <AuthLayout.PromptLink to="/register" state={location.state}>
+          Register
+        </AuthLayout.PromptLink>
+      </AuthLayout.Prompt>
+      <AuthLayout.Form>
       <form
         className="flex w-full flex-col gap-4"
         onSubmit={onSubmit}
@@ -117,6 +119,7 @@ const Login = () => {
           <TermsText />
         </FieldGroup>
       </form>
+      </AuthLayout.Form>
     </AuthLayout>
   );
 };

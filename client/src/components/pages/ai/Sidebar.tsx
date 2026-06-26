@@ -8,6 +8,8 @@ import {
   FaDiagramProject 
 } from 'react-icons/fa6';
 
+import { Button } from '@/components/ui/button';
+
 export default function Aside() {
   return (
     <aside className="w-64 h-screen bg-bg-surface border-r border-border flex flex-col flex-shrink-0 hidden md:flex">
@@ -52,10 +54,10 @@ export default function Aside() {
           </div>
 
         
-          <button className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-bg-base py-2.5 mt-4 rounded-3xl transition-colors duration-150 font-medium">
+          <Button className="mt-4 w-full rounded-3xl">
             <FaPlus />
             New Sprint
-          </button>
+          </Button>
 
         </div>
 

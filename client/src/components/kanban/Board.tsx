@@ -15,6 +15,7 @@ import { KanbanTaskCard, type KanbanTaskCardData } from "./task-card";
 import { TaskDetailModal } from "./task-detail-modal";
 import type { TaskListPatch } from "@/types/task";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { applyTaskListPatch } from "@/lib/apply-task-list-patch";
 import { reorderBoardTasks, sortTasksByColumnOrder } from "@/lib/reorder-board-tasks";
 // 1. حذفنا الـ BoardProps لأننا هنجيب الـ boardId من الـ URL
@@ -305,13 +306,15 @@ export default function Board() {
 
                   {/* زرار إضافة تاسك سفلي */}
                   <div className="p-3 border-t border-border/50 mt-auto">
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
                       onClick={() => handleAddTask(column.id)}
-                      className="w-full flex items-center justify-center gap-2 text-text-secondary hover:text-text-primary hover:bg-bg-subtle py-2 rounded-lg transition-colors duration-150 text-sm font-medium"
+                      className="w-full gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                     >
                       <FaPlus />
                       Add Task
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}

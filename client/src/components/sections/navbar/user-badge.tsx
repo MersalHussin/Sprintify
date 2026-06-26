@@ -1,3 +1,6 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+
 export type NavbarUser = {
   readonly name: string;
   readonly avatarUrl?: string;
@@ -19,37 +22,28 @@ function UserBadge({ user, onClick }: { readonly user: NavbarUser; readonly onCl
       <span className="text-sm font-medium text-foreground">
         Welcome, <span className="font-semibold">{user.name}</span>
       </span>
-      {hasAvatar ? (
-        <img
-          src={user.avatarUrl}
-          alt={`${user.name}'s avatar`}
-          width={36}
-          height={36}
-          loading="lazy"
-          decoding="async"
-          className="size-9 rounded-full object-cover outline outline-1 -outline-offset-1 outline-border"
-        />
-      ) : (
-        <span
-          aria-hidden="true"
-          className="grid size-9 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-        >
+      <Avatar className="size-9">
+        {hasAvatar ? (
+          <AvatarImage src={user.avatarUrl} alt={`${user.name}'s avatar`} />
+        ) : null}
+        <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
           {initials}
-        </span>
-      )}
+        </AvatarFallback>
+      </Avatar>
     </div>
   );
 
   if (!onClick) return content;
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onClick}
-      className="inline-flex min-h-10 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="min-h-10 rounded-full"
     >
       {content}
-    </button>
+    </Button>
   );
 }
 

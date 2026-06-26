@@ -1,44 +1,39 @@
 import type { ReactNode } from "react"
-import { Link } from "react-router"
 
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface PageMessageProps {
-  title: string
-  description: string
-  actionLabel?: string
-  actionTo?: string
-  action?: ReactNode
   className?: string
+  children: ReactNode
 }
 
-export function PageMessage({
-  title,
-  description,
-  actionLabel,
-  actionTo,
-  action,
-  className,
-}: PageMessageProps) {
-  const cta =
-    action ??
-    (actionLabel && actionTo ? (
-      <Button asChild size="lg" className="rounded-xl">
-        <Link to={actionTo}>{actionLabel}</Link>
-      </Button>
-    ) : null)
-
+function PageMessage({ className, children }: PageMessageProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-16 px-8 text-center",
+        "flex flex-col items-center justify-center px-8 py-16 text-center",
         className,
       )}
     >
-      <h2 className="text-2xl font-bold text-foreground mb-2">{title}</h2>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
-      {cta}
+      {children}
     </div>
   )
 }
+
+function PageMessageTitle({ children }: { children: ReactNode }) {
+  return <h2 className="mb-2 text-2xl font-bold text-foreground">{children}</h2>
+}
+
+function PageMessageDescription({ children }: { children: ReactNode }) {
+  return <p className="mb-6 max-w-md text-muted-foreground">{children}</p>
+}
+
+function PageMessageAction({ children }: { children: ReactNode }) {
+  return children
+}
+
+PageMessage.Title = PageMessageTitle
+PageMessage.Description = PageMessageDescription
+PageMessage.Action = PageMessageAction
+
+export { PageMessage }

@@ -1,6 +1,7 @@
 import React from "react";
 import { Check } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface StepItem {
@@ -95,15 +96,16 @@ export function Stepper({
             )}
 
             {isClickable ? (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 aria-current={isActive ? "step" : undefined}
                 aria-label={`Go back to ${step.title}`}
                 onClick={() => onStepClick(index)}
-                className="group flex flex-col items-start rounded-xl text-left transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group h-auto flex-col items-start rounded-xl p-0 text-left hover:opacity-90"
               >
                 {stepBody}
-              </button>
+              </Button>
             ) : (
               <div
                 aria-current={isActive ? "step" : undefined}

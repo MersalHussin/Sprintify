@@ -2,6 +2,7 @@ import { type FormEvent } from 'react';
 import { FaWandMagicSparkles, FaArrowRight, FaRegLightbulb } from 'react-icons/fa6';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface PromptInputProps {
   projectId: string | null;
@@ -49,12 +50,12 @@ export default function PromptInput({
           <FaRegLightbulb />
         </div>
 
-        <input
+        <Input
           type="text"
           value={promptText}
           onChange={(e) => onPromptChange(e.target.value)}
           placeholder="Build a fintech mobile app backlog..."
-          className="flex-1 bg-transparent py-3 px-2 outline-none text-foreground placeholder:text-muted-foreground text-lg"
+          className="flex-1 border-0 bg-transparent py-3 px-2 text-lg shadow-none focus-visible:ring-0"
           disabled={isGenerating || !projectId}
         />
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Navigate } from 'react-router';
+import { Link, Navigate } from 'react-router';
 import { apiFetch } from '@/lib/api';
 import type { GeneratedTask } from '@/types/task';
 import PromptInput from '@/components/pages/ai/PromptInput';
@@ -8,6 +8,15 @@ import RecentGenerations from '@/components/pages/ai/RecentGenerations';
 import GeneratedTasksPanel from '@/components/pages/ai/GeneratedTasksPanel';
 import type { GeneratedTaskItem } from '@/components/pages/ai/GeneratedTasksPanel';
 import { PageMessage } from '@/components/shared/page-message';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   dismissGeneration,
   getGeneration,
@@ -248,12 +257,17 @@ export default function AIPage() {
 
   if (noTeams) {
     return (
-      <PageMessage
-        title="No workspace found"
-        description="Create a workspace first to use AI task generation."
-        actionLabel="Go to Workspaces"
-        actionTo="/workspaces"
-      />
+      <PageMessage>
+        <PageMessage.Title>No workspace found</PageMessage.Title>
+        <PageMessage.Description>
+          Create a workspace first to use AI task generation.
+        </PageMessage.Description>
+        <PageMessage.Action>
+          <Button asChild size="lg" className="rounded-xl">
+            <Link to="/workspaces">Go to Workspaces</Link>
+          </Button>
+        </PageMessage.Action>
+      </PageMessage>
     );
   }
 
@@ -266,35 +280,43 @@ export default function AIPage() {
       <div className="w-full max-w-4xl flex flex-col gap-12">
         {projects.length > 1 && (
           <div className="flex justify-center">
-            <label className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Label className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Project</span>
-              <select
+              <Select
                 value={selectedProjectId ?? ''}
-                onChange={(e) => {
-                  setSelectedProjectId(e.target.value);
+                onValueChange={(value) => {
+                  setSelectedProjectId(value);
                   setGeneratedTasks([]);
                   setGenerationError(null);
                 }}
-                className="bg-card border border-border rounded-xl px-4 py-2 text-foreground text-sm shadow-sm focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               >
-                {projects.map((project) => (
-                  <option key={project._id} value={project._id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <SelectTrigger className="w-auto rounded-xl text-sm shadow-sm">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((project) => (
+                    <SelectItem key={project._id} value={project._id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Label>
           </div>
         )}
 
         {projects.length === 0 ? (
-          <PageMessage
-            className="py-12"
-            title="No projects yet"
-            description="Create a board in your workspace before generating tasks with AI."
-            actionLabel="Go to Workspaces"
-            actionTo="/workspaces"
-          />
+          <PageMessage className="py-12">
+            <PageMessage.Title>No projects yet</PageMessage.Title>
+            <PageMessage.Description>
+              Create a board in your workspace before generating tasks with AI.
+            </PageMessage.Description>
+            <PageMessage.Action>
+              <Button asChild size="lg" className="rounded-xl">
+                <Link to="/workspaces">Go to Workspaces</Link>
+              </Button>
+            </PageMessage.Action>
+          </PageMessage>
         ) : (
           <>
             <PromptInput

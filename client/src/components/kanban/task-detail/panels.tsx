@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react"
+import { createContext, useContext } from "react"
 import {
   DragDropContext,
   Draggable,
@@ -87,29 +88,45 @@ export function UserChip({ userId, users }: { userId: string; users: Record<stri
   )
 }
 
+const DetailRowContext = createContext<{ onEdit?: () => void }>({})
+
 export function DetailRow({
-  label,
   children,
   onEdit,
 }: {
-  label: string
   children: ReactNode
   onEdit?: () => void
 }) {
   return (
-    <div className="grid grid-cols-[7rem_1fr] items-start gap-x-4 gap-y-1 py-2.5">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex flex-wrap items-center gap-2">
+    <DetailRowContext.Provider value={{ onEdit }}>
+      <div className="grid grid-cols-[7rem_1fr] items-start gap-x-4 gap-y-1 py-2.5">
         {children}
-        {onEdit ? (
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onEdit} aria-label={`Edit ${label.toLowerCase()}`}>
-            <Pencil className="size-3.5" />
-          </Button>
-        ) : null}
       </div>
+    </DetailRowContext.Provider>
+  )
+}
+
+function DetailRowLabel({ children }: { children: ReactNode }) {
+  return <span className="text-sm text-muted-foreground">{children}</span>
+}
+
+function DetailRowValue({ children }: { children: ReactNode }) {
+  const { onEdit } = useContext(DetailRowContext)
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {children}
+      {onEdit ? (
+        <Button type="button" variant="ghost" size="icon-sm" onClick={onEdit} aria-label="Edit field">
+          <Pencil className="size-3.5" />
+        </Button>
+      ) : null}
     </div>
   )
 }
+
+DetailRow.Label = DetailRowLabel
+DetailRow.Value = DetailRowValue
 
 export function SubtaskRow({
   subtask,
@@ -177,25 +194,26 @@ export function SubtaskRow({
             subtask.completed && "opacity-70",
           )}
         >
-          <button
-            type="button"
+          <span
             {...provided.dragHandleProps}
-            className="rounded p-0.5 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-muted-foreground"
+            className="inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted hover:text-muted-foreground active:cursor-grabbing"
             aria-label="Reorder subtask"
           >
             <GripVertical className="size-4" />
-          </button>
-          <button
+          </span>
+          <Button
             type="button"
+            variant="outline"
+            size="icon-xs"
             onClick={onToggle}
             className={cn(
-              "flex size-4 shrink-0 items-center justify-center rounded border border-border",
+              "size-4 shrink-0 rounded p-0",
               subtask.completed && "border-primary bg-primary text-primary-foreground",
             )}
             aria-label={subtask.completed ? "Mark incomplete" : "Mark complete"}
           >
             {subtask.completed ? <Check className="size-3" /> : null}
-          </button>
+          </Button>
           {editing ? (
             <div className="flex min-w-0 flex-1 items-center gap-2 pr-1">
               <Input
@@ -380,7 +398,9 @@ export function TaskDetailDetailsPanel({
       </div>
 
       <div className="flex flex-col">
-        <DetailRow label="Status">
+        <DetailRow>
+          <DetailRow.Label>Status</DetailRow.Label>
+          <DetailRow.Value>
           {canEditStatusAndSubtasks ? (
             <Select
               value={task.status}
@@ -400,8 +420,11 @@ export function TaskDetailDetailsPanel({
           ) : (
             <StatusBadge status={task.status} />
           )}
+          </DetailRow.Value>
         </DetailRow>
-        <DetailRow label="Assigned to">
+        <DetailRow>
+          <DetailRow.Label>Assigned to</DetailRow.Label>
+          <DetailRow.Value>
           {task.assignees?.length ? (
             task.assignees.map((id) => <UserChip key={id} userId={id} users={users} />)
           ) : (
@@ -430,10 +453,19 @@ export function TaskDetailDetailsPanel({
               </DropdownMenuContent>
             </DropdownMenu>
           ) : null}
+          </DetailRow.Value>
         </DetailRow>
-        <DetailRow label="Created">{formatDate(task.createdAt)}</DetailRow>
-        <DetailRow label="Updated">{formatDate(task.updatedAt)}</DetailRow>
-        <DetailRow label="Priority">
+        <DetailRow>
+          <DetailRow.Label>Created</DetailRow.Label>
+          <DetailRow.Value>{formatDate(task.createdAt)}</DetailRow.Value>
+        </DetailRow>
+        <DetailRow>
+          <DetailRow.Label>Updated</DetailRow.Label>
+          <DetailRow.Value>{formatDate(task.updatedAt)}</DetailRow.Value>
+        </DetailRow>
+        <DetailRow>
+          <DetailRow.Label>Priority</DetailRow.Label>
+          <DetailRow.Value>
           {isManager ? (
             <Select
               value={task.priority ?? "Medium"}
@@ -453,8 +485,11 @@ export function TaskDetailDetailsPanel({
           ) : (
             <PriorityBadge priority={task.priority} status={task.status} />
           )}
+          </DetailRow.Value>
         </DetailRow>
-        <DetailRow label="Category">
+        <DetailRow>
+          <DetailRow.Label>Category</DetailRow.Label>
+          <DetailRow.Value>
           {isManager && editingCategory ? (
             <div className="flex items-center gap-2">
               <Input
@@ -490,6 +525,7 @@ export function TaskDetailDetailsPanel({
               ) : null}
             </>
           )}
+          </DetailRow.Value>
         </DetailRow>
       </div>
     </div>

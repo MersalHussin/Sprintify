@@ -13,51 +13,70 @@ import { Separator } from "@/components/ui/separator";
  * divider separating the description from a small visual element underneath.
  */
 
-type FeatureCardProps = {
-  readonly title: string;
-  readonly description: string;
-  readonly imageSrc: string;
-  readonly imageAlt: string;
-  readonly children?: ReactNode;
-};
-
-function FeatureCard({
-  title,
-  description,
-  imageSrc,
-  imageAlt,
-  children,
-}: FeatureCardProps) {
+function FeatureCard({ children }: { readonly children: ReactNode }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-3xl border border-border bg-bg-surface sm:flex-row">
-      <div className="flex w-full items-center justify-center p-4 sm:w-2/5">
-        <img
-          src={imageSrc}
-          alt={imageAlt}
-          width={520}
-          height={400}
-          loading="lazy"
-          decoding="async"
-          className="max-h-40 w-full rounded-2xl object-contain"
-        />
-      </div>
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-balance font-sans text-lg font-semibold text-foreground sm:text-xl">
-          {title}
-        </h3>
-        <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
-        {children ? (
-          <>
-            <Separator className="my-4" />
-            {children}
-          </>
-        ) : null}
-      </div>
+      {children}
     </article>
   );
 }
+
+function FeatureCardMedia({
+  src,
+  alt,
+}: {
+  readonly src: string;
+  readonly alt: string;
+}) {
+  return (
+    <div className="flex w-full items-center justify-center p-4 sm:w-2/5">
+      <img
+        src={src}
+        alt={alt}
+        width={520}
+        height={400}
+        loading="lazy"
+        decoding="async"
+        className="max-h-40 w-full rounded-2xl object-contain"
+      />
+    </div>
+  );
+}
+
+function FeatureCardBody({ children }: { readonly children: ReactNode }) {
+  return <div className="flex flex-1 flex-col p-6">{children}</div>;
+}
+
+function FeatureCardTitle({ children }: { readonly children: ReactNode }) {
+  return (
+    <h3 className="text-balance font-sans text-lg font-semibold text-foreground sm:text-xl">
+      {children}
+    </h3>
+  );
+}
+
+function FeatureCardDescription({ children }: { readonly children: ReactNode }) {
+  return (
+    <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function FeatureCardExtra({ children }: { readonly children: ReactNode }) {
+  return (
+    <>
+      <Separator className="my-4" />
+      {children}
+    </>
+  );
+}
+
+FeatureCard.Media = FeatureCardMedia;
+FeatureCard.Body = FeatureCardBody;
+FeatureCard.Title = FeatureCardTitle;
+FeatureCard.Description = FeatureCardDescription;
+FeatureCard.Extra = FeatureCardExtra;
 
 const AI_CHECKLIST: ReadonlyArray<{ readonly id: string; readonly label: string }> = [
   { id: "instant", label: "Instant task generation" },
@@ -109,80 +128,108 @@ function Features() {
         </div>
 
         <div className="mt-12 grid gap-6 sm:mt-16 sm:grid-cols-2">
-          <FeatureCard
-            title="AI works where you work"
-            description="Convert notes and messages into tasks instantly. AI-generated subtasks and checklists to keep work moving."
-            imageSrc="/assets/images/feature-ai-works.webp"
-            imageAlt="AI turning notes into tasks"
-          >
-            <ul className="flex flex-col gap-2.5">
-              {AI_CHECKLIST.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-2.5 text-sm text-foreground"
-                >
-                  <span
-                    className="flex size-4 items-center justify-center text-primary"
-                    aria-hidden="true"
-                  >
-                    <Minus className="size-4" />
-                  </span>
-                  {item.label}
-                </li>
-              ))}
-            </ul>
-          </FeatureCard>
-
-          <FeatureCard
-            title="Built for every team"
-            description="Ship faster with less overhead. From startups to enterprises, Sprintify adapts to the way your team works."
-            imageSrc="/assets/images/feature-built-for-teams.webp"
-            imageAlt="Teams of different sizes collaborating"
-          >
-            <ul className="flex flex-wrap gap-2">
-              {TEAM_TAGS.map((tag) => (
-                <li key={tag.id}>
-                  <Badge variant="pill" className="inline-flex items-center gap-1.5">
-                    <TeamTagIcon icon={tag.icon} />
-                    {tag.label}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          </FeatureCard>
-
-          <FeatureCard
-            title="Focus on what matters"
-            description="Less noise, more clarity. View only the tasks assigned to you, so your team stays aligned on what matters and ships faster."
-            imageSrc="/assets/images/feature-focus.webp"
-            imageAlt="Focused personal task list"
-          >
-            <img
-              src="/assets/images/focus-on-what-matters.png"
-              alt="Task filter toggle showing All tasks and My tasks options"
-              width={400}
-              height={120}
-              loading="lazy"
-              decoding="async"
-              className="w-full object-contain"
+          <FeatureCard>
+            <FeatureCard.Media
+              src="/assets/images/feature-ai-works.webp"
+              alt="AI turning notes into tasks"
             />
+            <FeatureCard.Body>
+              <FeatureCard.Title>AI works where you work</FeatureCard.Title>
+              <FeatureCard.Description>
+                Convert notes and messages into tasks instantly. AI-generated subtasks and checklists to keep work moving.
+              </FeatureCard.Description>
+              <FeatureCard.Extra>
+                <ul className="flex flex-col gap-2.5">
+                  {AI_CHECKLIST.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center gap-2.5 text-sm text-foreground"
+                    >
+                      <span
+                        className="flex size-4 items-center justify-center text-primary"
+                        aria-hidden="true"
+                      >
+                        <Minus className="size-4" />
+                      </span>
+                      {item.label}
+                    </li>
+                  ))}
+                </ul>
+              </FeatureCard.Extra>
+            </FeatureCard.Body>
           </FeatureCard>
 
-          <FeatureCard
-            title="Real-time collaboration"
-            description="Work together seamlessly with real-time task updates, instant changes across boards, and shared team activity all in one place."
-            imageSrc="/assets/images/feature-realtime.webp"
-            imageAlt="Real-time team activity on a shared board"
-          >
-            <img
-              src="/assets/images/real-time-collaboration.png"
-              alt="Kanban board showing In Progress, Done, and To do columns"
-              width={400}
-              height={120}
-              loading="lazy"
-              decoding="async"
-              className="w-full object-contain"
+          <FeatureCard>
+            <FeatureCard.Media
+              src="/assets/images/feature-built-for-teams.webp"
+              alt="Teams of different sizes collaborating"
             />
+            <FeatureCard.Body>
+              <FeatureCard.Title>Built for every team</FeatureCard.Title>
+              <FeatureCard.Description>
+                Ship faster with less overhead. From startups to enterprises, Sprintify adapts to the way your team works.
+              </FeatureCard.Description>
+              <FeatureCard.Extra>
+                <ul className="flex flex-wrap gap-2">
+                  {TEAM_TAGS.map((tag) => (
+                    <li key={tag.id}>
+                      <Badge variant="pill" className="inline-flex items-center gap-1.5">
+                        <TeamTagIcon icon={tag.icon} />
+                        {tag.label}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </FeatureCard.Extra>
+            </FeatureCard.Body>
+          </FeatureCard>
+
+          <FeatureCard>
+            <FeatureCard.Media
+              src="/assets/images/feature-focus.webp"
+              alt="Focused personal task list"
+            />
+            <FeatureCard.Body>
+              <FeatureCard.Title>Focus on what matters</FeatureCard.Title>
+              <FeatureCard.Description>
+                Less noise, more clarity. View only the tasks assigned to you, so your team stays aligned on what matters and ships faster.
+              </FeatureCard.Description>
+              <FeatureCard.Extra>
+                <img
+                  src="/assets/images/focus-on-what-matters.png"
+                  alt="Task filter toggle showing All tasks and My tasks options"
+                  width={400}
+                  height={120}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full object-contain"
+                />
+              </FeatureCard.Extra>
+            </FeatureCard.Body>
+          </FeatureCard>
+
+          <FeatureCard>
+            <FeatureCard.Media
+              src="/assets/images/feature-realtime.webp"
+              alt="Real-time team activity on a shared board"
+            />
+            <FeatureCard.Body>
+              <FeatureCard.Title>Real-time collaboration</FeatureCard.Title>
+              <FeatureCard.Description>
+                Work together seamlessly with real-time task updates, instant changes across boards, and shared team activity all in one place.
+              </FeatureCard.Description>
+              <FeatureCard.Extra>
+                <img
+                  src="/assets/images/real-time-collaboration.png"
+                  alt="Kanban board showing In Progress, Done, and To do columns"
+                  width={400}
+                  height={120}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full object-contain"
+                />
+              </FeatureCard.Extra>
+            </FeatureCard.Body>
           </FeatureCard>
         </div>
       </div>

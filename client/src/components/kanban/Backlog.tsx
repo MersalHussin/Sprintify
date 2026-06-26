@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa6"
 import Swal from "sweetalert2"
 
 import { useSetPageTitle } from "@/context/page-title-context"
+import { Button } from "@/components/ui/button"
 import { apiFetch } from "@/lib/api"
 import { KanbanTaskCard, type KanbanTaskCardData } from "./task-card"
 import { TaskDetailModal } from "./task-detail-modal"
@@ -127,14 +128,15 @@ export default function Backlog() {
         </div>
 
         <div className="border-t border-border/50 p-3">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleAddTask}
-            className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="w-full gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <FaPlus />
             Add Item
-          </button>
+          </Button>
         </div>
       </div>
 

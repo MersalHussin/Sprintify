@@ -105,15 +105,14 @@ export function KanbanTaskCard({
         </span>
         <div className="flex shrink-0 items-center gap-1">
           {dragHandleProps ? (
-            <button
-              type="button"
+            <span
               {...dragHandleProps}
               onClick={(e) => e.stopPropagation()}
-              className="rounded p-0.5 text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground"
+              className="inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground active:cursor-grabbing"
               aria-label="Drag task"
             >
               <GripVertical className="size-4" />
-            </button>
+            </span>
           ) : null}
           <ChevronDown
             className="size-4 text-muted-foreground/60"

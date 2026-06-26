@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type FooterProps = {
@@ -85,14 +86,14 @@ function LinkList({ links }: { links: readonly FooterLink[] }) {
 }
 
 function FooterAnchor({ link }: { link: FooterLink }) {
-  const className = cn(
-    "inline-flex min-h-8 items-center text-pretty text-sm text-muted-foreground transition-colors duration-150",
-    link.disabled ? "cursor-not-allowed opacity-50" : "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm",
+  const linkClassName = cn(
+    "inline-flex min-h-8 h-auto items-center p-0 text-pretty text-sm text-muted-foreground no-underline",
+    !link.disabled && "hover:text-foreground hover:no-underline",
   );
 
   if (link.disabled) {
     return (
-      <span className={className} aria-disabled="true">
+      <span className={cn(linkClassName, "cursor-not-allowed opacity-50")} aria-disabled="true">
         {link.label}
       </span>
     );
@@ -100,29 +101,26 @@ function FooterAnchor({ link }: { link: FooterLink }) {
 
   if (link.external) {
     return (
-      <a
-        href={link.href}
-        className={className}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {link.label}
-      </a>
+      <Button variant="link" asChild className={linkClassName}>
+        <a href={link.href} target="_blank" rel="noopener noreferrer">
+          {link.label}
+        </a>
+      </Button>
     );
   }
 
   if (link.href.startsWith("/")) {
     return (
-      <Link to={link.href} className={className}>
-        {link.label}
-      </Link>
+      <Button variant="link" asChild className={linkClassName}>
+        <Link to={link.href}>{link.label}</Link>
+      </Button>
     );
   }
 
   return (
-    <a href={link.href} className={className}>
-      {link.label}
-    </a>
+    <Button variant="link" asChild className={linkClassName}>
+      <a href={link.href}>{link.label}</a>
+    </Button>
   );
 }
 

@@ -90,14 +90,16 @@ function ContactModal() {
         )}
       >
         {/* Close button */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={onClose}
           aria-label="Close contact form"
-          className="absolute end-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute end-4 top-4"
         >
           <X className="size-5" />
-        </button>
+        </Button>
 
         {/* Header */}
         <div className="mb-6">

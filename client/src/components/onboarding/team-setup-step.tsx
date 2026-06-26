@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { TextDivider } from "@/components/ui/text-divider";
 import {
   createTeamSchema,
@@ -55,12 +56,12 @@ function TeamSetupStep({
       >
         <div className="flex w-full items-end justify-between gap-4">
           <div className="flex w-full max-w-[361px] flex-col gap-2">
-            <label
+            <Label
               htmlFor="inviteCode"
               className="font-sans text-base font-light text-muted-foreground"
             >
               Invite code
-            </label>
+            </Label>
             <Input
               id="inviteCode"
               placeholder="ABC12XYZ"
@@ -94,12 +95,12 @@ function TeamSetupStep({
       >
         <div className="flex w-full items-end justify-between gap-4">
           <div className="flex w-full max-w-[361px] flex-col gap-2">
-            <label
+            <Label
               htmlFor="teamName"
               className="font-sans text-base font-light text-muted-foreground"
             >
               Team name
-            </label>
+            </Label>
             <Input
               id="teamName"
               placeholder="Target Achievers"
@@ -125,13 +126,14 @@ function TeamSetupStep({
 
       <TextDivider label="Or" className="py-1" />
 
-      <button
+      <Button
         type="button"
+        variant="link"
         onClick={onSkip}
-        className="mx-auto rounded-sm font-sans text-lg text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="mx-auto font-sans text-lg text-muted-foreground"
       >
         Skip for now
-      </button>
+      </Button>
     </div>
   );
 }
