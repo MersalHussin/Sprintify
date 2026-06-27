@@ -1,6 +1,21 @@
 import { auth } from './firebase';
 
-const BASE_URL = 'http://localhost:4000/api';
+function resolveApiBaseUrl(): string {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/$/, '');
+  }
+
+  // Vite inlines env vars at build time. When VITE_API_URL is missing on Vercel,
+  // use same-origin /api (proxied via vercel.json) instead of localhost.
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+
+  return 'http://localhost:4000/api';
+}
+
+const BASE_URL = resolveApiBaseUrl();
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const user = auth.currentUser;
