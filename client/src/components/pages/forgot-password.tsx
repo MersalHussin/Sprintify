@@ -57,13 +57,15 @@ const ForgotPassword = () => {
 
   if (sent) {
     return (
-      <AuthLayout
-        title="Check your inbox"
-        prompt="Remember your password?"
-        promptActionLabel="Login"
-        promptActionTo="/login"
-        promptActionState={location.state}
-      >
+      <AuthLayout>
+        <AuthLayout.Title>Check your inbox</AuthLayout.Title>
+        <AuthLayout.Prompt>
+          <span className="font-normal">Remember your password? </span>
+          <AuthLayout.PromptLink to="/login" state={location.state}>
+            Login
+          </AuthLayout.PromptLink>
+        </AuthLayout.Prompt>
+        <AuthLayout.Form>
         <div className="flex w-full flex-col items-center gap-5 py-2">
           <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 animate-in zoom-in-50 duration-300">
             <CheckCircle2 className="size-8 text-primary" />
@@ -92,18 +94,21 @@ const ForgotPassword = () => {
             Send again
           </Button>
         </div>
+        </AuthLayout.Form>
       </AuthLayout>
     );
   }
 
   return (
-    <AuthLayout
-      title="Reset your password"
-      prompt="Remember your password?"
-      promptActionLabel="Login"
-      promptActionTo="/login"
-      promptActionState={location.state}
-    >
+    <AuthLayout>
+      <AuthLayout.Title>Reset your password</AuthLayout.Title>
+      <AuthLayout.Prompt>
+        <span className="font-normal">Remember your password? </span>
+        <AuthLayout.PromptLink to="/login" state={location.state}>
+          Login
+        </AuthLayout.PromptLink>
+      </AuthLayout.Prompt>
+      <AuthLayout.Form>
       <div className="flex w-full flex-col gap-4">
         <p className="font-sans text-sm text-foreground/60">
           Enter the email address associated with your account and we'll send you a link to reset your password.
@@ -167,6 +172,7 @@ const ForgotPassword = () => {
           </FieldGroup>
         </form>
       </div>
+      </AuthLayout.Form>
     </AuthLayout>
   );
 };
