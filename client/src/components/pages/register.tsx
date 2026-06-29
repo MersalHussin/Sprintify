@@ -11,14 +11,12 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { registerSchema, type RegisterFormValues } from "@/models/auth-schemas.zod";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
-import { getRedirectPath } from "@/lib/redirect-after-auth";
 import { getAuthErrorMessage } from "@/lib/auth-error";
 
 const Register = () => {
   const { user, signUpWithEmail, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = getRedirectPath(location, "/onboarding");
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +50,7 @@ const Register = () => {
         console.error("Failed to sync name to backend", e);
       }
       
-      navigate(redirectTo, { replace: true });
+      navigate("/onboarding", { replace: true });
     } catch (error: unknown) {
       console.error(error);
       setAuthError(getAuthErrorMessage(error, "An error occurred during registration."));

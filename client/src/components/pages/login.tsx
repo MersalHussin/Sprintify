@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation, Link } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -94,6 +94,16 @@ const Login = () => {
             error={errors.password?.message}
             {...register("password")}
           />
+
+          <div className="flex justify-end -mt-2">
+            <Link
+              to="/forgot-password"
+              state={location.state}
+              className="font-sans text-sm text-foreground/60 underline underline-offset-2 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           {authError ? (
             <p

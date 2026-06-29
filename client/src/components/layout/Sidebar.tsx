@@ -16,6 +16,7 @@ import {
   ListTodo,
   Settings,
   Sparkles,
+  UserPlus,
   Users,
 } from "lucide-react"
 
@@ -43,6 +44,7 @@ import {
   SidebarMenuSubItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { JoinTeamModal } from "@/components/ui/join-team-modal"
 
 interface Team {
   _id: string
@@ -75,6 +77,7 @@ type AppSidebarContextValue = {
   isDashboard: boolean
   isMyTasks: boolean
   isSettings: boolean
+  setJoinTeamOpen: (open: boolean) => void
 }
 
 const AppSidebarContext = createContext<AppSidebarContextValue | null>(null)
@@ -96,6 +99,7 @@ function AppSidebar({ children }: { children: ReactNode }) {
   const [isProjectManager, setIsProjectManager] = useState(false)
   const [projectOpen, setProjectOpen] = useState(true)
   const [openTeams, setOpenTeams] = useState<Record<string, boolean>>({})
+  const [joinTeamOpen, setJoinTeamOpen] = useState(false)
 
   useEffect(() => {
     async function loadSidebarData() {
@@ -186,6 +190,7 @@ function AppSidebar({ children }: { children: ReactNode }) {
       isDashboard,
       isMyTasks,
       isSettings,
+      setJoinTeamOpen,
     }),
     [
       teams,
@@ -210,6 +215,7 @@ function AppSidebar({ children }: { children: ReactNode }) {
   return (
     <AppSidebarContext.Provider value={value}>
       <Sidebar>{children}</Sidebar>
+      <JoinTeamModal open={joinTeamOpen} onClose={() => setJoinTeamOpen(false)} />
     </AppSidebarContext.Provider>
   )
 }
@@ -328,11 +334,23 @@ function AppSidebarTeamsGroup() {
     teamMembersPath,
     isTeamProjectsRoute,
     isTeamMembersRoute,
+    setJoinTeamOpen,
   } = useAppSidebar()
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Teams</SidebarGroupLabel>
+      <div className="flex items-center justify-between pr-2">
+        <SidebarGroupLabel>Teams</SidebarGroupLabel>
+        <button
+          type="button"
+          onClick={() => setJoinTeamOpen(true)}
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          title="Join a team"
+        >
+          <UserPlus className="size-3.5" />
+          <span>Join</span>
+        </button>
+      </div>
       <SidebarGroupContent>
         <SidebarMenu>
           {teams.length === 0 ? (

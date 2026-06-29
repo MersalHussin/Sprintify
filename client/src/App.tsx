@@ -9,6 +9,7 @@ import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 const Home = lazy(() => import("./components/pages/home"));
 const Login = lazy(() => import("./components/pages/login"));
 const Register = lazy(() => import("./components/pages/register"));
+const ForgotPassword = lazy(() => import("./components/pages/forgot-password"));
 const AcceptInvite = lazy(() => import("./components/pages/accept-invite"));
 const Dashboard = lazy(() => import("./components/pages/dashboard"));
 const Terms = lazy(() => import("./components/pages/terms"));
@@ -48,6 +49,7 @@ function App() {
                 <Route element={<PublicRoute />}>
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                 </Route>
 
                 {/* Protected Routes */}

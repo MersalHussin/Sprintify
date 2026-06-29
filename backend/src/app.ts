@@ -17,7 +17,21 @@ import userRoutes from "./users/routes";
 export function createApp(): express.Application {
   const app = express();
 
-  app.use(cors({ origin: env.frontendUrl, credentials: true }));
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // In development, allow any origin (e.g., localhost on any port, 127.0.0.1, etc.)
+        if (!origin || env.environment === "dev") {
+          callback(null, true);
+        } else if (origin === env.frontendUrl) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+      credentials: true,
+    })
+  );
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: "cross-origin" },
