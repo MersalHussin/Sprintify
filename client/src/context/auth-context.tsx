@@ -12,6 +12,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  GithubAuthProvider,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -26,8 +29,11 @@ interface AuthContextProps {
   profileLoading: boolean;
   refreshProfile: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   signUpWithEmail: (email: string, password: string, username: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  deleteAccountWithPassword: (password: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -58,12 +64,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    setProfileLoading(true);
     try {
       const userProfile = await fetchUserProfile();
       setProfile(userProfile);
-    } finally {
-      setProfileLoading(false);
+    } catch (error) {
+      console.error("Failed to refresh profile", error);
     }
   }, []);
 
@@ -94,6 +99,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signInWithPopup(auth, provider);
   };
 
+  const signInWithGithub = async () => {
+    const provider = new GithubAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
+
   const signUpWithEmail = async (email: string, password: string, username: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, {
@@ -110,6 +120,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
   };
 
+  const deleteAccountWithPassword = async (password: string) => {
+    if (!user) throw new Error("No user is currently signed in.");
+    if (!user.email) throw new Error("User does not have an email address.");
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+
+    await apiFetch("/users/me", { method: "DELETE" });
+    
+    // We log out from Firebase immediately since the backend delete might have already deleted the user from Firebase
+    setProfile(null);
+    setUser(null);
+  };
+
+  const deleteAccount = async () => {
+    if (!user) throw new Error("No user is currently signed in.");
+    
+    await apiFetch("/users/me", { method: "DELETE" });
+    
+    setProfile(null);
+    setUser(null);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -119,8 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profileLoading,
         refreshProfile,
         signInWithGoogle,
+        signInWithGithub,
         signUpWithEmail,
         signInWithEmail,
+        deleteAccountWithPassword,
+        deleteAccount,
         logOut,
       }}
     >

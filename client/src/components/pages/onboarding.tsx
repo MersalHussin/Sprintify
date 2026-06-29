@@ -27,7 +27,7 @@ const EMPTY_PERSONAL_INFO: PersonalInfoFormValues = {
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState<StepDirection>("forward");
   const [personalInfo, setPersonalInfo] =
@@ -61,6 +61,7 @@ const Onboarding = () => {
           timezone: values.timezone,
         }),
       });
+      await refreshProfile();
       setPersonalInfo(values);
       goToStep(2);
     } catch (error) {

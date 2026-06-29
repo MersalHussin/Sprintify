@@ -296,7 +296,82 @@ export default function Settings() {
             </Button>
           </div>
         </div>
+
+        <DeleteAccountSection />
       </div>
+    </div>
+  );
+}
+
+function DeleteAccountSection() {
+  const { deleteAccountWithPassword } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
+
+  const handleDelete = async () => {
+    if (!password) {
+      setError('Please enter your password to confirm deletion.');
+      return;
+    }
+
+    if (!window.confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      setError(null);
+      await deleteAccountWithPassword(password);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Incorrect password. Please try again.');
+      } else {
+        setError(err.message || 'Failed to delete account. Please check your password or try logging in again.');
+      }
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
+      <h2 className="text-xl font-semibold text-destructive mb-4">Danger Zone</h2>
+      <p className="text-sm text-text-secondary mb-6">
+        Permanently delete your account and all associated data. This action cannot be undone.
+      </p>
+
+      <div className="mb-4 max-w-sm">
+        <FieldLabel htmlFor="delete-password">Confirm Password</FieldLabel>
+        <Input
+          id="delete-password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1"
+        />
+        <p className="text-xs text-text-secondary mt-2">
+          If you registered with Google or GitHub, you must first set a password via the{' '}
+          <a href="/forgot-password" className="underline hover:text-text-primary">
+            Forgot Password
+          </a>{' '}
+          page before you can delete your account.
+        </p>
+      </div>
+
+      {error ? (
+        <p className="text-sm text-destructive mb-4">{error}</p>
+      ) : null}
+
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={handleDelete}
+        disabled={deleting}
+      >
+        {deleting ? 'Deleting Account…' : 'Delete Account'}
+      </Button>
     </div>
   );
 }

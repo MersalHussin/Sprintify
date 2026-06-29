@@ -6,6 +6,7 @@ import { apiFetch } from '../../lib/api';
 import { Button } from '@/components/ui/button';
 import { ensureDefaultWorkspaceTeam } from '@/lib/default-workspace';
 import { useSetPageTitle } from '@/context/page-title-context';
+import { useAuth } from '@/context/auth-context';
 
 // 1. تعريف شكل البورد اللي راجعة من السيرفر
 interface ProjectType {
@@ -19,7 +20,9 @@ export default function Workspaces() {
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
   const [teamName, setTeamName] = useState<string>();
+  const [teamOwnerId, setTeamOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useSetPageTitle(teamName ? `${teamName} — Projects` : "Projects");
 
@@ -32,7 +35,10 @@ export default function Workspaces() {
         setCurrentTeamId(teamId);
 
         const teamRes = await apiFetch(`/teams/${teamId}`);
-        if (teamRes?.team?.name) setTeamName(teamRes.team.name);
+        if (teamRes?.team) {
+          if (teamRes.team.name) setTeamName(teamRes.team.name);
+          if (teamRes.team.createdBy) setTeamOwnerId(teamRes.team.createdBy);
+        }
 
         const projectsRes = await apiFetch(`/teams/${teamId}/projects`);
         setProjects(projectsRes?.projects || projectsRes?.items || []);
@@ -106,6 +112,8 @@ export default function Workspaces() {
     return <div className="p-12 text-text-secondary">Loading workspaces...</div>;
   }
 
+  const isOwner = user?.uid === teamOwnerId;
+
   return (
     <div className="flex-1 flex flex-col p-8 md:p-12 overflow-y-auto">
       <div className="max-w-6xl w-full mx-auto">        
@@ -124,30 +132,34 @@ export default function Workspaces() {
               onClick={() => navigate(`/board/${project._id}`)}
               className="h-36 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-850 text-primary-foreground p-5 rounded-2xl font-bold text-xl cursor-pointer border border-border-strong transition-colors duration-150 transform hover:-translate-y-1 flex flex-col justify-between group relative"
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={(e) => handleDeleteBoard(e, project._id)}
-                className="absolute top-4 right-4 text-blue-200 opacity-0 hover:text-red-400 group-hover:opacity-100"
-                title="Delete Board"
-              >
-                <FaTrash size={14} />
-              </Button>
+              {isOwner && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={(e) => handleDeleteBoard(e, project._id)}
+                  className="absolute top-4 right-4 text-blue-200 opacity-0 hover:text-red-400 group-hover:opacity-100"
+                  title="Delete Board"
+                >
+                  <FaTrash size={14} />
+                </Button>
+              )}
 
               <span className="truncate pr-6">{project.name}</span>
               <span className="text-xs font-normal text-blue-200 group-hover:text-primary-foreground transition-colors duration-150">Open Board →</span>
             </div>
           ))}
 
-          {/* بوكس الإضافة المتقطع */}
-          <div 
-            onClick={handleAddBoard}
-            className="h-36 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 bg-bg-subtle/50 text-text-secondary font-semibold cursor-pointer transition-colors duration-150 hover:border-accent hover:bg-bg-subtle hover:text-accent"
-          >
-            <FaPlus size={20} />
-            <span>Add New Board</span>
-          </div>
+          {/* بوكس الإضافة المتقطع - يظهر فقط للمالك */}
+          {isOwner && (
+            <div 
+              onClick={handleAddBoard}
+              className="h-36 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 bg-bg-subtle/50 text-text-secondary font-semibold cursor-pointer transition-colors duration-150 hover:border-accent hover:bg-bg-subtle hover:text-accent"
+            >
+              <FaPlus size={20} />
+              <span>Add New Board</span>
+            </div>
+          )}
 
         </div>
       </div>
