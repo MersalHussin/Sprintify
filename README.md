@@ -35,6 +35,9 @@ Sprintify is a collaborative, AI-powered project management tool designed for ag
 ## 🗂️ Figma File
 **[🔗 View Sprintify Figma Design](https://www.figma.com/design/q9NYvs3ybYxyvNz74Jda9d/Sprintify?node-id=0-1&t=TLiCxIkoJSCSRrn4-1)**
 
+## 📊 Presentation Link
+**[🔗 View Sprintify Presentation](https://canva.link/t1wbkbipvq4jgzb)**
+
 ## 🎯 Project Objectives
 - **AI Automation:** To leverage AI and prompt engineering to break down complex project goals into specific, manageable development tasks automatically.  
 - **Enhanced Collaboration:** To provide a centralized hub for teams with real-time state management using Redux Toolkit.  
