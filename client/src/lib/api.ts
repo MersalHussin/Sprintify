@@ -1,12 +1,12 @@
 import { auth } from './firebase';
 
 function resolveApiBaseUrl(): string {
-  const configured = import.meta.env.API_URL?.trim();
+  const configured = import.meta.env.VITE_API_URL?.trim();
   if (configured) {
     return configured.replace(/\/$/, '');
   }
 
-  // Vite inlines env vars at build time. When API_URL is missing on Vercel,
+  // Vite inlines env vars at build time. When VITE_API_URL is missing on Vercel,
   // use same-origin /api (proxied via vercel.json) instead of localhost.
   if (import.meta.env.PROD) {
     return '/api';
